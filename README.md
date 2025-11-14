@@ -221,6 +221,18 @@ OrderEase/
 2. Get connection string
 3. Update `MONGODB_URI` in backend `.env`
 
+## 🔒 Security Features
+
+- ✅ **Password Security:** bcrypt hashing with salt rounds
+- ✅ **JWT Authentication:** Token-based authentication with expiry
+- ✅ **Rate Limiting:** Protection against brute force and DoS attacks
+  - Auth endpoints: 5 requests per 15 minutes
+  - Order creation: 10 requests per 5 minutes
+  - General API: 100 requests per 15 minutes
+- ✅ **Protected Routes:** Admin-only endpoints with middleware
+- ✅ **CORS Configuration:** Cross-origin resource sharing enabled
+- ✅ **Input Validation:** Request validation for all endpoints
+
 ## 📝 Future Enhancements
 
 - [ ] Payment gateway integration (Razorpay/Stripe)
