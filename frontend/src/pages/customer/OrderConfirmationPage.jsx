@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../api/axios';
 import Navbar from '../../components/customer/Navbar';
@@ -8,11 +8,7 @@ const OrderConfirmationPage = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchOrder();
-  }, [orderId]);
-
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
       const { data } = await api.get(`/orders/${orderId}`);
       setOrder(data);
@@ -21,7 +17,11 @@ const OrderConfirmationPage = () => {
       console.error('Error fetching order:', error);
       setLoading(false);
     }
-  };
+  }, [orderId]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
 
   const getStatusColor = (status) => {
     const colors = {
