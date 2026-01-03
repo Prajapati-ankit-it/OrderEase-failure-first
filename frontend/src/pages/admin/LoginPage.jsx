@@ -1,45 +1,75 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import api from '../../api/axios';
-import { setCredentials } from '../../redux/slices/authSlice';
+import { loginUser } from '../../redux/slices/authSlice';
+import { Input, Button, ErrorMessage } from '../../components/ui';
+import { isValidEmail, validateRequired } from '../../utils';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    // Clear field error on change
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    const emailError = validateRequired(formData.email, 'Email');
+    if (emailError) {
+      newErrors.email = emailError;
+    } else if (!isValidEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    const passwordError = validateRequired(formData.password, 'Password');
+    if (passwordError) {
+      newErrors.password = passwordError;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError('');
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
-    setError('');
 
     try {
-      const { data } = await api.post('/auth/login', formData);
+      const result = await dispatch(loginUser(formData)).unwrap();
       
-      if (data.role !== 'admin') {
-        setError('Access denied. Admin credentials required.');
+      if (result.role !== 'admin') {
+        setApiError('Access denied. Admin credentials required.');
         setLoading(false);
         return;
       }
 
-      dispatch(setCredentials({ user: data, token: data.token }));
       navigate('/admin/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setApiError(err || 'Login failed. Please check your credentials.');
       setLoading(false);
     }
   };
@@ -52,58 +82,52 @@ const LoginPage = () => {
           <p className="text-gray-600">Sign in to manage your restaurant</p>
         </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
+        {apiError && (
+          <div className="mb-6">
+            <ErrorMessage message={apiError} />
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="admin@example.com"
-              />
-            </div>
+            <Input
+              label="Email Address"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              placeholder="admin@example.com"
+              required
+            />
 
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                placeholder="Enter your password"
-              />
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              placeholder="Enter your password"
+              required
+            />
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full mt-6 bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 transition disabled:bg-gray-400"
+            fullWidth
+            loading={loading}
+            className="mt-6"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
+            Sign In
+          </Button>
         </form>
 
         <div className="mt-6 text-center">
           <button
             onClick={() => navigate('/')}
-            className="text-orange-600 hover:text-orange-700 font-semibold"
+            className="text-orange-600 hover:text-orange-700 font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 rounded px-2 py-1"
+            aria-label="Back to menu"
           >
             ← Back to Menu
           </button>

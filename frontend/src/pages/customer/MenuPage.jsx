@@ -1,28 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api/axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchMenuItems } from '../../redux/slices/menuSlice';
 import MenuItem from '../../components/customer/MenuItem';
 import Navbar from '../../components/customer/Navbar';
+import { LoadingSpinner, ErrorMessage, EmptyState } from '../../components/ui';
 
 const MenuPage = () => {
-  const [menuItems, setMenuItems] = useState([]);
+  const dispatch = useDispatch();
+  const { items: menuItems, loading, error } = useSelector((state) => state.menu);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [loading, setLoading] = useState(true);
 
   const categories = ['All', 'Starters', 'Main Course', 'Fast Food', 'Drinks', 'Desserts'];
 
   useEffect(() => {
-    fetchMenuItems();
-  }, []);
+    dispatch(fetchMenuItems({ available: true }));
+  }, [dispatch]);
 
-  const fetchMenuItems = async () => {
-    try {
-      const { data } = await api.get('/menu?available=true');
-      setMenuItems(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching menu:', error);
-      setLoading(false);
-    }
+  const handleRetry = () => {
+    dispatch(fetchMenuItems({ available: true }));
   };
 
   const filteredItems = selectedCategory === 'All'
@@ -39,6 +34,13 @@ const MenuPage = () => {
           <p className="text-gray-600">Choose from our delicious selection</p>
         </div>
 
+        {/* Error Message */}
+        {error && !loading && (
+          <div className="mb-6">
+            <ErrorMessage message={error} onRetry={handleRetry} />
+          </div>
+        )}
+
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-3 mb-8">
           {categories.map((category) => (
@@ -50,6 +52,8 @@ const MenuPage = () => {
                   ? 'bg-orange-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-orange-100'
               }`}
+              aria-label={`Filter by ${category}`}
+              aria-pressed={selectedCategory === category}
             >
               {category}
             </button>
@@ -58,14 +62,14 @@ const MenuPage = () => {
 
         {/* Menu Items Grid */}
         {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-            <p className="mt-4 text-gray-600">Loading menu...</p>
-          </div>
+          <LoadingSpinner size="xl" className="py-20" />
         ) : filteredItems.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-gray-600 text-lg">No items found in this category</p>
-          </div>
+          <EmptyState
+            title="No items found"
+            description={`No menu items available${selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}`}
+            action={() => setSelectedCategory('All')}
+            actionLabel="View All Items"
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredItems.map((item) => (
