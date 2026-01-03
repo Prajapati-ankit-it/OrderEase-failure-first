@@ -1,20 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from './redux/slices/authSlice';
-import { ErrorBoundary } from './components/ui';
+import { ErrorBoundary, LoadingSpinner } from './components/ui';
 
-// Customer Pages
-import MenuPage from './pages/customer/MenuPage';
-import CartPage from './pages/customer/CartPage';
-import CheckoutPage from './pages/customer/CheckoutPage';
-import OrderConfirmationPage from './pages/customer/OrderConfirmationPage';
+// Lazy load pages for code splitting
+const MenuPage = lazy(() => import('./pages/customer/MenuPage'));
+const CartPage = lazy(() => import('./pages/customer/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/customer/CheckoutPage'));
+const OrderConfirmationPage = lazy(() => import('./pages/customer/OrderConfirmationPage'));
+const LoginPage = lazy(() => import('./pages/admin/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
+const MenuManagementPage = lazy(() => import('./pages/admin/MenuManagementPage'));
+const OrdersManagementPage = lazy(() => import('./pages/admin/OrdersManagementPage'));
 
-// Admin Pages
-import LoginPage from './pages/admin/LoginPage';
-import DashboardPage from './pages/admin/DashboardPage';
-import MenuManagementPage from './pages/admin/MenuManagementPage';
-import OrdersManagementPage from './pages/admin/OrdersManagementPage';
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <LoadingSpinner size="xl" />
+  </div>
+);
 
 // Auth listener component
 const AuthListener = () => {
@@ -53,40 +58,42 @@ function App() {
     <ErrorBoundary>
       <Router>
         <AuthListener />
-        <Routes>
-          {/* Customer Routes */}
-          <Route path="/" element={<MenuPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Customer Routes */}
+            <Route path="/" element={<MenuPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-confirmation/:orderId" element={<OrderConfirmationPage />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<LoginPage />} />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/menu"
-            element={
-              <ProtectedRoute>
-                <MenuManagementPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/orders"
-            element={
-              <ProtectedRoute>
-                <OrdersManagementPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<LoginPage />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/menu"
+              element={
+                <ProtectedRoute>
+                  <MenuManagementPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <ProtectedRoute>
+                  <OrdersManagementPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Suspense>
       </Router>
     </ErrorBoundary>
   );
