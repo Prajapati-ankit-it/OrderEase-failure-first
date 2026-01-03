@@ -130,15 +130,14 @@ export class CartService {
       throw new NotFoundException('Cart not found');
     }
 
-    // Find cart item
-    const cartItem = await this.prisma.cartItem.findFirst({
+    // Verify cart item belongs to user's cart
+    const cartItem = await this.prisma.cartItem.findUnique({
       where: {
         id: itemId,
-        cartId: cart.id,
       },
     });
 
-    if (!cartItem) {
+    if (!cartItem || cartItem.cartId !== cart.id) {
       throw new NotFoundException('Cart item not found');
     }
 
@@ -171,15 +170,14 @@ export class CartService {
       throw new NotFoundException('Cart not found');
     }
 
-    // Find and delete cart item
-    const cartItem = await this.prisma.cartItem.findFirst({
+    // Verify cart item belongs to user's cart
+    const cartItem = await this.prisma.cartItem.findUnique({
       where: {
         id: itemId,
-        cartId: cart.id,
       },
     });
 
-    if (!cartItem) {
+    if (!cartItem || cartItem.cartId !== cart.id) {
       throw new NotFoundException('Cart item not found');
     }
 

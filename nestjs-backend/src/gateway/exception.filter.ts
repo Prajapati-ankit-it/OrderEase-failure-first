@@ -9,6 +9,14 @@ import {
 import { Response } from 'express';
 
 /**
+ * Interface for HTTP request with typed properties
+ */
+interface HttpRequest {
+  method: string;
+  url: string;
+}
+
+/**
  * Global exception filter for handling all errors
  */
 @Catch()
@@ -18,10 +26,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<{
-      method: string;
-      url: string;
-    }>();
+    const request = ctx.getRequest<HttpRequest>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';

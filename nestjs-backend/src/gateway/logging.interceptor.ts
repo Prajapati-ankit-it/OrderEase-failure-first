@@ -9,6 +9,17 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 /**
+ * Interface for HTTP request with typed properties
+ */
+interface HttpRequest {
+  method: string;
+  url: string;
+  ip: string;
+  body: Record<string, unknown>;
+  get: (header: string) => string | undefined;
+}
+
+/**
  * Interceptor for logging all API requests and responses
  */
 @Injectable()
@@ -16,13 +27,7 @@ export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger('API');
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const request = context.switchToHttp().getRequest<{
-      method: string;
-      url: string;
-      ip: string;
-      body: Record<string, unknown>;
-      get: (header: string) => string | undefined;
-    }>();
+    const request = context.switchToHttp().getRequest<HttpRequest>();
     const { method, url, ip, body } = request;
     const userAgent = request.get('user-agent') || '';
     const now = Date.now();

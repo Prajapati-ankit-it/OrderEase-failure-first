@@ -113,28 +113,33 @@ export class OrderService {
       };
     });
 
-    // Create order with items
-    const order = await this.prisma.order.create({
-      data: {
-        userId,
-        totalPrice,
-        orderItems: {
-          create: orderItems,
+    // Use transaction to ensure order creation and cart clearing are atomic
+    const order = await this.prisma.$transaction(async (prisma) => {
+      // Create order with items
+      const newOrder = await prisma.order.create({
+        data: {
+          userId,
+          totalPrice,
+          orderItems: {
+            create: orderItems,
+          },
         },
-      },
-      include: {
-        orderItems: {
-          include: { food: true },
+        include: {
+          orderItems: {
+            include: { food: true },
+          },
         },
-      },
-    });
-
-    // Clear cart if requested
-    if (clearCart) {
-      await this.prisma.cartItem.deleteMany({
-        where: { cartId: cart.id },
       });
-    }
+
+      // Clear cart if requested
+      if (clearCart) {
+        await prisma.cartItem.deleteMany({
+          where: { cartId: cart.id },
+        });
+      }
+
+      return newOrder;
+    });
 
     return order;
   }
