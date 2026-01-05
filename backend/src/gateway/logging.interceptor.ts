@@ -51,12 +51,8 @@ export class LoggingInterceptor implements NestInterceptor {
           const responseTime = Date.now() - now;
           this.logger.log(`Completed ${method} ${url} - ${responseTime}ms`);
         },
-        error: (error: Error) => {
-          const responseTime = Date.now() - now;
-          this.logger.error(
-            `Failed ${method} ${url} - ${responseTime}ms - Error: ${error.message}`,
-          );
-        },
+        // Error logging removed to prevent duplicate logs
+        // Errors are logged by GlobalExceptionFilter
       }),
     );
   }
