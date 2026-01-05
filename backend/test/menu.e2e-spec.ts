@@ -14,7 +14,7 @@ describe('Menu Endpoint (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Apply the same global configurations as in main.ts
     app.useGlobalPipes(
       new ValidationPipe({
@@ -26,9 +26,9 @@ describe('Menu Endpoint (e2e)', () => {
         },
       }),
     );
-    
+
     app.setGlobalPrefix('api');
-    
+
     await app.init();
   });
 
@@ -38,9 +38,7 @@ describe('Menu Endpoint (e2e)', () => {
 
   describe('GET /api/menu', () => {
     it('should return 200 status code', () => {
-      return request(app.getHttpServer())
-        .get('/api/menu')
-        .expect(200);
+      return request(app.getHttpServer()).get('/api/menu').expect(200);
     });
 
     it('should accept available query parameter', () => {
@@ -69,16 +67,17 @@ describe('Menu Endpoint (e2e)', () => {
       expect(response.body).toHaveProperty('success');
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('data');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(response.body.success).toBe(true);
     });
   });
 
   describe('GET /api/menu/:id', () => {
-    it('should accept id parameter', () => {
-      // Using a sample ID - will return not found but endpoint exists
+    it('should return 404 for non-existent item', () => {
+      // Using a sample ID that doesn't exist
       return request(app.getHttpServer())
         .get('/api/menu/test-id-123')
-        .expect(200);
+        .expect(404);
     });
   });
 });

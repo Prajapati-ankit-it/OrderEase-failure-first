@@ -1,4 +1,10 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  NotFoundException,
+} from '@nestjs/common';
 import { PublicService } from './public.service';
 import { successResponse } from '../utils';
 import { MESSAGES } from '../constants';
@@ -30,7 +36,7 @@ export class MenuController {
   async getFoodById(@Param('id') id: string) {
     const food = await this.publicService.getFoodById(id);
     if (!food) {
-      return successResponse(MESSAGES.GENERAL.NOT_FOUND, null);
+      throw new NotFoundException(MESSAGES.GENERAL.NOT_FOUND);
     }
     return successResponse(MESSAGES.GENERAL.SUCCESS, food);
   }
