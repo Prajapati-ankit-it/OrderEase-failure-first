@@ -33,13 +33,6 @@ describe('Error Logging (Duplicate Prevention)', () => {
   });
 
   it('should log errors only once when exception occurs', async () => {
-    // Create a simple test controller that throws NotFoundException
-    const testController = {
-      throwError: () => {
-        throw new NotFoundException('Test endpoint not found');
-      },
-    };
-
     // Simulate error being thrown and caught by filter
     const exception = new NotFoundException('Test endpoint not found');
     const mockHost = {
