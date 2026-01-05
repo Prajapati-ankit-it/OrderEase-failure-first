@@ -132,6 +132,19 @@ npm run start:prod
 
 ## 📚 API Endpoints
 
+### API Documentation (Swagger)
+The API includes comprehensive Swagger/OpenAPI documentation available at:
+
+| Endpoint | Description |
+|----------|-------------|
+| `/api/docs` | Interactive Swagger UI for testing endpoints |
+| `/api/docs-json` | OpenAPI JSON specification |
+
+To access the Swagger documentation:
+1. Start the application with `npm run start:dev`
+2. Open your browser to `http://localhost:3000/api/docs`
+3. Use the interactive UI to explore and test all API endpoints
+
 ### Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
