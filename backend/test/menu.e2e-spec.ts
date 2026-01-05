@@ -67,8 +67,9 @@ describe('Menu Endpoint (e2e)', () => {
       expect(response.body).toHaveProperty('success');
       expect(response.body).toHaveProperty('message');
       expect(response.body).toHaveProperty('data');
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      expect(response.body.success).toBe(true);
+      expect(response.body).toMatchObject({
+        success: true,
+      });
     });
   });
 

@@ -16,14 +16,17 @@ export class MenuController {
   /**
    * Get menu (available food items)
    * GET /api/menu?available=true
+   *
+   * Note: The 'available' parameter is accepted for API compatibility but
+   * this public endpoint always returns only available items for security.
    */
   @Get()
   async getMenu(
-    @Query('available') available?: string,
+    @Query('available') _available?: string,
     @Query('category') category?: string,
   ) {
-    // If available is explicitly set to false, we still only show available items
-    // for this public endpoint (security/business logic)
+    // The _available parameter is accepted but not used - this endpoint
+    // always returns only available items for this public endpoint
     const menu = await this.publicService.getMenu(category);
     return successResponse(MESSAGES.GENERAL.SUCCESS, menu);
   }
