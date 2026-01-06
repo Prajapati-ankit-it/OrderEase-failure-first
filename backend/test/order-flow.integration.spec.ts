@@ -5,12 +5,22 @@ import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/database';
 import { TestPrismaService, createTestUser, createTestFood } from '../src/test-utils';
 
+interface TestFood {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  category: string;
+  image?: string;
+  isAvailable: boolean;
+}
+
 describe('Order Flow Integration Tests', () => {
   let app: INestApplication;
   let prismaService: TestPrismaService;
   let userAccessToken: string;
   let userId: string;
-  let foodItems: any[] = [];
+  let foodItems: TestFood[] = [];
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
