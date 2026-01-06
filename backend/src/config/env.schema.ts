@@ -60,12 +60,24 @@ export const envSchema = z.object({
 export type EnvConfig = z.infer<typeof envSchema>;
 
 /**
+ * Cached validated environment configuration
+ * Ensures validation happens only once
+ */
+let cachedEnvConfig: EnvConfig | null = null;
+
+/**
  * Validates environment variables
  * Throws error with clear message if validation fails
+ * Uses cache to avoid redundant validations
  */
 export function validateEnv(): EnvConfig {
+  if (cachedEnvConfig) {
+    return cachedEnvConfig;
+  }
+
   try {
-    return envSchema.parse(process.env);
+    cachedEnvConfig = envSchema.parse(process.env);
+    return cachedEnvConfig;
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errorMessages = error.issues
@@ -77,10 +89,20 @@ export function validateEnv(): EnvConfig {
 
       console.error('\n🚨 Environment Validation Failed:\n');
       console.error(errorMessages);
-      console.error('\n💡 Please check your .env file and ensure all required variables are set correctly.\n');
-      
+      console.error(
+        '\n💡 Please check your .env file and ensure all required variables are set correctly.\n',
+      );
+
       throw new Error('Invalid environment configuration');
     }
     throw error;
   }
+}
+
+/**
+ * Resets the cached environment configuration
+ * Used for testing purposes only
+ */
+export function resetEnvCache(): void {
+  cachedEnvConfig = null;
 }

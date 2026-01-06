@@ -1,4 +1,4 @@
-import { validateEnv, envSchema } from './env.schema';
+import { validateEnv, envSchema, resetEnvCache } from './env.schema';
 
 describe('Environment Validation', () => {
   const originalEnv = process.env;
@@ -6,6 +6,7 @@ describe('Environment Validation', () => {
   beforeEach(() => {
     jest.resetModules();
     process.env = { ...originalEnv };
+    resetEnvCache();
   });
 
   afterAll(() => {
@@ -128,6 +129,20 @@ describe('Environment Validation', () => {
       expect(config.CORS_ORIGIN).toBe('http://localhost:3001');
       expect(config.JWT_EXPIRES_IN).toBe('7d');
       expect(config.JWT_REFRESH_EXPIRES_IN).toBe('30d');
+    });
+
+    it('should cache validation result and return same instance', () => {
+      process.env.DATABASE_URL =
+        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.JWT_SECRET =
+        'a-very-secure-secret-that-is-at-least-32-characters-long';
+      process.env.JWT_REFRESH_SECRET =
+        'a-very-secure-refresh-secret-that-is-at-least-32-characters';
+
+      const config1 = validateEnv();
+      const config2 = validateEnv();
+
+      expect(config1).toBe(config2);
     });
   });
 });
