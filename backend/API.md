@@ -582,14 +582,27 @@ GET /api/public/health
 
 ### Get Available Menu
 ```http
+GET /api/menu
 GET /api/public/menu
 ```
+
+**Query Parameters:**
+- `available` (optional) - Filter by availability (always returns available items for public endpoints)
+- `category` (optional) - Filter by category
 
 **Response:**
 Returns all available food items
 
+**Examples:**
+```http
+GET /api/menu?available=true
+GET /api/menu?category=Main+Course
+GET /api/menu?available=true&category=Desserts
+```
+
 ### Get Menu Item by ID
 ```http
+GET /api/menu/:id
 GET /api/public/menu/:id
 ```
 
@@ -639,7 +652,7 @@ API requests are rate-limited to prevent abuse:
 ## Typical User Flow
 
 ### Customer Journey
-1. Browse menu: `GET /api/public/menu`
+1. Browse menu: `GET /api/menu` or `GET /api/public/menu`
 2. Register/Login: `POST /api/auth/signup` or `POST /api/auth/login`
 3. Add items to cart: `POST /api/cart`
 4. View cart: `GET /api/cart`
