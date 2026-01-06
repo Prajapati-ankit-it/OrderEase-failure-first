@@ -51,7 +51,7 @@ export async function createTestingModule(config: {
  * Create a mock PrismaService for unit tests
  */
 export function createMockPrismaService() {
-  return {
+  const mockService = {
     user: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
@@ -98,8 +98,18 @@ export function createMockPrismaService() {
       delete: jest.fn(),
       deleteMany: jest.fn(),
     },
-    $transaction: jest.fn((callback) => callback(createMockPrismaService())),
+    $transaction: jest.fn(),
   };
+
+  // Configure transaction to pass the same mock instance
+  mockService.$transaction.mockImplementation((callback) => {
+    if (typeof callback === 'function') {
+      return callback(mockService);
+    }
+    return Promise.resolve([]);
+  });
+
+  return mockService;
 }
 
 /**
