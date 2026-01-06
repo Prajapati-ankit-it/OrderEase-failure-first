@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -11,6 +11,7 @@ import { FoodModule } from './food';
 import { OrderModule } from './order';
 import { CartModule } from './cart';
 import { appConfig, databaseConfig, jwtConfig } from './config';
+import { AppLoggerService, RequestContextMiddleware } from './common';
 
 @Module({
   imports: [
@@ -31,6 +32,12 @@ import { appConfig, databaseConfig, jwtConfig } from './config';
     OrderModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AppLoggerService],
+  exports: [AppLoggerService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply request context middleware to all routes
+    consumer.apply(RequestContextMiddleware).forRoutes('*');
+  }
+}
