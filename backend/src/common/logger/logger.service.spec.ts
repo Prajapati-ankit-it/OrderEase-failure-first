@@ -46,7 +46,7 @@ describe('AppLoggerService', () => {
 
     expect(consoleLogSpy).toHaveBeenCalledTimes(1);
     const logOutput = JSON.parse(consoleLogSpy.mock.calls[0][0]);
-    
+
     expect(logOutput.level).toBe(LogLevel.INFO);
     expect(logOutput.message).toBe('Test message');
     expect(logOutput.context).toBe('TestContext');
@@ -74,7 +74,7 @@ describe('AppLoggerService', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
     const logOutput = JSON.parse(consoleErrorSpy.mock.calls[0][0]);
-    
+
     expect(logOutput.level).toBe(LogLevel.ERROR);
     expect(logOutput.message).toBe('Error message');
     expect(logOutput.error.stack).toBe('Stack trace here');
@@ -94,7 +94,7 @@ describe('AppLoggerService', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
     const logOutput = JSON.parse(consoleErrorSpy.mock.calls[0][0]);
-    
+
     expect(logOutput.level).toBe(LogLevel.ERROR);
     expect(logOutput.error.stack).toBeUndefined();
   });
@@ -104,7 +104,7 @@ describe('AppLoggerService', () => {
 
     expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
     const logOutput = JSON.parse(consoleWarnSpy.mock.calls[0][0]);
-    
+
     expect(logOutput.level).toBe(LogLevel.WARN);
     expect(logOutput.message).toBe('Warning message');
   });

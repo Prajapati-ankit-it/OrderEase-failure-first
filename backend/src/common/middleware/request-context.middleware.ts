@@ -23,13 +23,13 @@ export class RequestContextMiddleware implements NestMiddleware {
   use(req: RequestWithContext, res: Response, next: NextFunction) {
     // Generate or use existing request ID from header
     const requestId = (req.headers['x-request-id'] as string) || randomUUID();
-    
+
     // Attach request ID to request object
     req.requestId = requestId;
-    
+
     // Also set it as response header for tracing
     res.setHeader('x-request-id', requestId);
-    
+
     next();
   }
 }

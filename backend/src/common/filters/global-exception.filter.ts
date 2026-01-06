@@ -22,7 +22,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     private readonly configService: ConfigService,
   ) {
     this.logger.setContext('GlobalExceptionFilter');
-    this.isProduction = this.configService.get<string>('app.nodeEnv') === 'production';
+    this.isProduction =
+      this.configService.get<string>('app.nodeEnv') === 'production';
   }
 
   catch(exception: unknown, host: ArgumentsHost) {
@@ -81,8 +82,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     // Log the error with structured logging
     const errorStack = exception instanceof Error ? exception.stack : undefined;
-    const errorName = exception instanceof Error ? exception.name : undefined;
-    
+
     this.logger.error(
       `${request.method} ${request.url} - Status: ${status} - ${message}`,
       errorStack,

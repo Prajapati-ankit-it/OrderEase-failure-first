@@ -114,7 +114,12 @@ describe('GlobalExceptionFilter', () => {
       method: 'POST',
       url: '/api/test',
       requestId: 'test-request-id',
-      user: { id: 'user-123', email: 'test@test.com', name: 'Test', role: 'USER' },
+      user: {
+        id: 'user-123',
+        email: 'test@test.com',
+        name: 'Test',
+        role: 'USER',
+      },
       headers: {},
     };
     const mockHost = {
@@ -194,7 +199,10 @@ describe('GlobalExceptionFilter', () => {
         return undefined;
       }),
     };
-    const prodFilter = new GlobalExceptionFilter(logger, prodConfigService as any);
+    const prodFilter = new GlobalExceptionFilter(
+      logger,
+      prodConfigService as any,
+    );
 
     const exception = new Error('Test error');
     const mockResponse = {

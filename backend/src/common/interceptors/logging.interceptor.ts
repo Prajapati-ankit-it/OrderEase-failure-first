@@ -20,7 +20,10 @@ export class LoggingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<RequestWithContext>();
-    const { method, url, ip, body } = request;
+    const method = request.method;
+    const url = request.url;
+    const ip = request.ip;
+    const body = request.body as Record<string, unknown> | undefined;
     const userAgent = request.headers['user-agent'] || '';
     const now = Date.now();
 
@@ -41,12 +44,17 @@ export class LoggingInterceptor implements NestInterceptor {
     });
 
     // Log request body for non-GET requests (excluding sensitive data)
-    if (method !== 'GET' && body && Object.keys(body).length > 0) {
-      const sanitizedBody = { ...body };
+    if (
+      method !== 'GET' &&
+      body &&
+      typeof body === 'object' &&
+      Object.keys(body).length > 0
+    ) {
+      const sanitizedBody: Record<string, unknown> = { ...body };
       if ('password' in sanitizedBody) sanitizedBody.password = '***';
       if ('refreshToken' in sanitizedBody) sanitizedBody.refreshToken = '***';
       if ('token' in sanitizedBody) sanitizedBody.token = '***';
-      
+
       this.logger.debug(`Request Body`, 'LoggingInterceptor', {
         body: sanitizedBody,
       });

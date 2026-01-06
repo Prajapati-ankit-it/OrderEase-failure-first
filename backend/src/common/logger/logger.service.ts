@@ -40,7 +40,8 @@ export class AppLoggerService implements NestLoggerService {
   private isProduction: boolean;
 
   constructor(private configService: ConfigService) {
-    this.isProduction = this.configService.get<string>('app.nodeEnv') === 'production';
+    this.isProduction =
+      this.configService.get<string>('app.nodeEnv') === 'production';
   }
 
   /**
@@ -67,14 +68,23 @@ export class AppLoggerService implements NestLoggerService {
   /**
    * Log info message
    */
-  log(message: string, context?: string, metadata?: Record<string, unknown>): void {
+  log(
+    message: string,
+    context?: string,
+    metadata?: Record<string, unknown>,
+  ): void {
     this.writeLog(LogLevel.INFO, message, context, metadata);
   }
 
   /**
    * Log error message
    */
-  error(message: string, trace?: string, context?: string, metadata?: Record<string, unknown>): void {
+  error(
+    message: string,
+    trace?: string,
+    context?: string,
+    metadata?: Record<string, unknown>,
+  ): void {
     const errorObj = trace ? { message, stack: trace } : { message };
     this.writeLog(LogLevel.ERROR, message, context, metadata, errorObj);
   }
@@ -82,21 +92,33 @@ export class AppLoggerService implements NestLoggerService {
   /**
    * Log warning message
    */
-  warn(message: string, context?: string, metadata?: Record<string, unknown>): void {
+  warn(
+    message: string,
+    context?: string,
+    metadata?: Record<string, unknown>,
+  ): void {
     this.writeLog(LogLevel.WARN, message, context, metadata);
   }
 
   /**
    * Log debug message
    */
-  debug(message: string, context?: string, metadata?: Record<string, unknown>): void {
+  debug(
+    message: string,
+    context?: string,
+    metadata?: Record<string, unknown>,
+  ): void {
     this.writeLog(LogLevel.DEBUG, message, context, metadata);
   }
 
   /**
    * Log verbose message (alias for debug)
    */
-  verbose(message: string, context?: string, metadata?: Record<string, unknown>): void {
+  verbose(
+    message: string,
+    context?: string,
+    metadata?: Record<string, unknown>,
+  ): void {
     this.debug(message, context, metadata);
   }
 
@@ -142,7 +164,7 @@ export class AppLoggerService implements NestLoggerService {
         message: error.message,
         name: error.name,
       };
-      
+
       // Include stack trace only in non-production
       if (!this.isProduction && error.stack) {
         logEntry.error.stack = error.stack;
