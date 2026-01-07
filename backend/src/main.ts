@@ -10,6 +10,65 @@ import {
 } from './common';
 import { validateEnv } from './config';
 
+/**
+ * Global error handlers for process-level errors
+ * These use direct console output instead of AppLoggerService because:
+ * - They may be triggered before the app is fully initialized
+ * - The app/DI system may be in a broken state when these errors occur
+ * - We need guaranteed error logging even if the logging infrastructure fails
+ *
+ * These handlers are registered at the top to catch all errors, including
+ * those that occur during module initialization.
+ */
+
+// Handle uncaught exceptions - must be first to catch all errors
+process.on('uncaughtException', (error: Error) => {
+  // Using console.error directly as app may not be initialized
+  console.error(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      context: 'UncaughtException',
+      message: `Uncaught Exception: ${error.message}`,
+      error: {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      },
+    }),
+  );
+
+  // Always exit on uncaught exception
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason: unknown) => {
+  const errorMessage =
+    reason instanceof Error ? reason.message : String(reason);
+  const errorStack = reason instanceof Error ? reason.stack : undefined;
+
+  // Using console.error directly as app may not be initialized
+  console.error(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      context: 'UnhandledRejection',
+      message: `Unhandled Promise Rejection: ${errorMessage}`,
+      error: {
+        message: errorMessage,
+        stack: errorStack,
+      },
+    }),
+  );
+
+  // Exit process in production, keep running in development for debugging
+  // Direct env access is intentional as ConfigService may not be available
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+});
+
 async function bootstrap() {
   // Validate environment variables before starting the application
   validateEnv();
@@ -43,7 +102,10 @@ async function bootstrap() {
   );
 
   // Get instances for global interceptor and filter
-  const loggingInterceptor = new LoggingInterceptor(app.get(AppLoggerService));
+  const loggingInterceptor = new LoggingInterceptor(
+    app.get(AppLoggerService),
+    configService,
+  );
   const exceptionFilter = new GlobalExceptionFilter(
     app.get(AppLoggerService),
     configService,
@@ -78,62 +140,6 @@ async function bootstrap() {
   );
   logger.log(`API Gateway active with structured logging and error handling`);
 }
-
-/**
- * Global error handlers for process-level errors
- * These use direct console output instead of AppLoggerService because:
- * - They may be triggered before the app is fully initialized
- * - The app/DI system may be in a broken state when these errors occur
- * - We need guaranteed error logging even if the logging infrastructure fails
- */
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (reason: unknown) => {
-  const errorMessage =
-    reason instanceof Error ? reason.message : String(reason);
-  const errorStack = reason instanceof Error ? reason.stack : undefined;
-
-  // Using console.error directly as app may not be initialized
-  console.error(
-    JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'error',
-      context: 'UnhandledRejection',
-      message: `Unhandled Promise Rejection: ${errorMessage}`,
-      error: {
-        message: errorMessage,
-        stack: errorStack,
-      },
-    }),
-  );
-
-  // Exit process in production, keep running in development for debugging
-  // Direct env access is intentional as ConfigService may not be available
-  if (process.env.NODE_ENV === 'production') {
-    process.exit(1);
-  }
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error: Error) => {
-  // Using console.error directly as app may not be initialized
-  console.error(
-    JSON.stringify({
-      timestamp: new Date().toISOString(),
-      level: 'error',
-      context: 'UncaughtException',
-      message: `Uncaught Exception: ${error.message}`,
-      error: {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-      },
-    }),
-  );
-
-  // Always exit on uncaught exception
-  process.exit(1);
-});
 
 bootstrap().catch((err: Error) => {
   // Using console.error directly as app bootstrap failed

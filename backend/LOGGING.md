@@ -78,7 +78,7 @@ export class MyService {
   "userId": "user-123",
   "metadata": {
     "action": "doSomething",
-    "timestamp": 1704564000000
+    "timestamp": 1736186400000
   }
 }
 ```
@@ -118,9 +118,53 @@ Logs all incoming requests and outgoing responses.
 
 **Features:**
 - Logs request method, URL, IP, and user agent
-- Sanitizes sensitive data (passwords, tokens)
+- **Deep sanitization** of sensitive data in request bodies
 - Tracks response times
 - Includes correlation ID and user ID when available
+
+**Sensitive Data Sanitization:**
+The interceptor automatically sanitizes the following field names (case-insensitive) at all nesting levels:
+- `password`
+- `refreshToken`
+- `token`
+- `accessToken`
+- `apiKey`
+- `secret`
+- `secretKey`
+- `privateKey`
+- `credential`
+- `credentials`
+
+**Important:** Sensitive fields are sanitized regardless of their value type (string, number, boolean, object, array, etc.).
+
+**Example:**
+```typescript
+// Request body:
+{
+  user: {
+    email: "test@test.com",
+    password: "secret123"  // string
+  },
+  config: {
+    apiKey: 12345,  // number
+    token: true  // boolean
+  }
+}
+
+// Logged as:
+{
+  user: {
+    email: "test@test.com",
+    password: "***"
+  },
+  config: {
+    apiKey: "***",
+    token: "***"
+  }
+}
+```
+
+**Note:** Fields containing sensitive keywords (e.g., `userPassword`, `mySecret`) are also sanitized.
 
 ## Configuration
 

@@ -3,7 +3,11 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/database';
-import { TestPrismaService, createTestUser, createTestFood } from '../src/test-utils';
+import {
+  TestPrismaService,
+  createTestUser,
+  createTestFood,
+} from '../src/test-utils';
 
 interface TestFood {
   id: string;
@@ -395,7 +399,10 @@ describe('Order Flow Integration Tests', () => {
         items: [{ foodId: foodItems[0].id, quantity: 1 }],
       };
 
-      await request(app.getHttpServer()).post('/orders').send(orderDto).expect(401);
+      await request(app.getHttpServer())
+        .post('/orders')
+        .send(orderDto)
+        .expect(401);
     });
   });
 });

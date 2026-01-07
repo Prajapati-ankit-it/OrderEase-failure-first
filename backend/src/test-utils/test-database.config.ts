@@ -33,7 +33,9 @@ export const getTestConfigModule = () =>
           refreshExpiresIn: '7d',
         },
         database: {
-          url: process.env.DATABASE_URL || 'postgresql://test:test@localhost:5432/orderease_test',
+          url:
+            process.env.DATABASE_URL ||
+            'postgresql://test:test@localhost:5432/orderease_test',
         },
       }),
     ],

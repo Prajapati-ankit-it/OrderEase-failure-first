@@ -78,9 +78,7 @@ describe('OrderService', () => {
 
   describe('create', () => {
     const createOrderDto = {
-      items: [
-        { foodId: 'food-1', quantity: 2 },
-      ],
+      items: [{ foodId: 'food-1', quantity: 2 }],
     };
 
     it('should successfully create an order', async () => {
@@ -121,8 +119,12 @@ describe('OrderService', () => {
     it('should throw NotFoundException if some food items are not available', async () => {
       prismaService.food.findMany.mockResolvedValue([]);
 
-      await expect(service.create('user-1', createOrderDto)).rejects.toThrow(NotFoundException);
-      await expect(service.create('user-1', createOrderDto)).rejects.toThrow('Some food items are not available');
+      await expect(service.create('user-1', createOrderDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.create('user-1', createOrderDto)).rejects.toThrow(
+        'Some food items are not available',
+      );
     });
 
     it('should throw NotFoundException if food item not found in the list', async () => {
@@ -135,7 +137,9 @@ describe('OrderService', () => {
 
       prismaService.food.findMany.mockResolvedValue([mockFood]); // Only one food returned
 
-      await expect(service.create('user-1', createOrderDtoMultiple)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.create('user-1', createOrderDtoMultiple),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should calculate total price correctly for multiple items', async () => {
@@ -177,7 +181,9 @@ describe('OrderService', () => {
         return callback(mockPrisma);
       });
 
-      const result = await service.createFromCart('user-1', { clearCart: true });
+      const result = await service.createFromCart('user-1', {
+        clearCart: true,
+      });
 
       expect(prismaService.cart.findUnique).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
@@ -198,14 +204,20 @@ describe('OrderService', () => {
         cartItems: [],
       });
 
-      await expect(service.createFromCart('user-1', {})).rejects.toThrow(NotFoundException);
-      await expect(service.createFromCart('user-1', {})).rejects.toThrow('Cart is empty');
+      await expect(service.createFromCart('user-1', {})).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.createFromCart('user-1', {})).rejects.toThrow(
+        'Cart is empty',
+      );
     });
 
     it('should throw NotFoundException if cart does not exist', async () => {
       prismaService.cart.findUnique.mockResolvedValue(null);
 
-      await expect(service.createFromCart('user-1', {})).rejects.toThrow(NotFoundException);
+      await expect(service.createFromCart('user-1', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException if some items are unavailable', async () => {
@@ -221,8 +233,12 @@ describe('OrderService', () => {
 
       prismaService.cart.findUnique.mockResolvedValue(cartWithUnavailableItem);
 
-      await expect(service.createFromCart('user-1', {})).rejects.toThrow(NotFoundException);
-      await expect(service.createFromCart('user-1', {})).rejects.toThrow('Some items in your cart are no longer available');
+      await expect(service.createFromCart('user-1', {})).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.createFromCart('user-1', {})).rejects.toThrow(
+        'Some items in your cart are no longer available',
+      );
     });
 
     it('should not clear cart if clearCart is false', async () => {
@@ -332,8 +348,12 @@ describe('OrderService', () => {
     it('should throw NotFoundException if order not found', async () => {
       prismaService.order.findUnique.mockResolvedValue(null);
 
-      await expect(service.findOne('non-existent')).rejects.toThrow(NotFoundException);
-      await expect(service.findOne('non-existent')).rejects.toThrow(MESSAGES.GENERAL.NOT_FOUND);
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.findOne('non-existent')).rejects.toThrow(
+        MESSAGES.GENERAL.NOT_FOUND,
+      );
     });
   });
 
@@ -343,7 +363,9 @@ describe('OrderService', () => {
       prismaService.order.findUnique.mockResolvedValue(mockOrder);
       prismaService.order.update.mockResolvedValue(updatedOrder);
 
-      const result = await service.updateStatus('order-1', { status: OrderStatus.PREPARING });
+      const result = await service.updateStatus('order-1', {
+        status: OrderStatus.PREPARING,
+      });
 
       expect(prismaService.order.update).toHaveBeenCalledWith({
         where: { id: 'order-1' },
@@ -361,7 +383,9 @@ describe('OrderService', () => {
     it('should throw NotFoundException if order not found', async () => {
       prismaService.order.findUnique.mockResolvedValue(null);
 
-      await expect(service.updateStatus('non-existent', { status: OrderStatus.PREPARING })).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateStatus('non-existent', { status: OrderStatus.PREPARING }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -381,7 +405,9 @@ describe('OrderService', () => {
     it('should throw NotFoundException if order not found', async () => {
       prismaService.order.findUnique.mockResolvedValue(null);
 
-      await expect(service.remove('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.remove('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

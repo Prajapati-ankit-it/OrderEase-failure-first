@@ -18,10 +18,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly isProduction: boolean;
 
   constructor(
-    private readonly logger: AppLoggerService,
+    private readonly loggerService: AppLoggerService,
     private readonly configService: ConfigService,
   ) {
-    this.logger.setContext('GlobalExceptionFilter');
     this.isProduction =
       this.configService.get<string>('app.nodeEnv') === 'production';
   }
@@ -31,12 +30,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<RequestWithContext>();
 
+    // Create a new logger instance for this request to avoid state contamination
+    const logger = new AppLoggerService(this.configService);
+    logger.setContext('GlobalExceptionFilter');
+
     // Set request context in logger
     if (request.requestId) {
-      this.logger.setRequestId(request.requestId);
+      logger.setRequestId(request.requestId);
     }
     if (request.user?.id) {
-      this.logger.setUserId(request.user.id);
+      logger.setUserId(request.user.id);
     }
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -67,23 +70,52 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       'code' in exception
     ) {
       const code = String((exception as { code: unknown }).code);
-      if (code === 'P2002') {
-        // Prisma unique constraint violation
-        status = HttpStatus.CONFLICT;
-        message = 'Resource already exists';
-        errorCode = 'CONFLICT_ERROR';
-      } else if (code.startsWith('P')) {
-        // Other Prisma errors
-        status = HttpStatus.BAD_REQUEST;
-        message = 'Database operation failed';
-        errorCode = 'DATABASE_ERROR';
+      switch (code) {
+        case 'P2002':
+          // Prisma unique constraint violation
+          status = HttpStatus.CONFLICT;
+          message = 'Resource already exists';
+          errorCode = 'CONFLICT_ERROR';
+          break;
+        case 'P2025':
+          // Prisma record not found
+          status = HttpStatus.NOT_FOUND;
+          message = 'Resource not found';
+          errorCode = 'NOT_FOUND_ERROR';
+          break;
+        case 'P2003':
+          // Prisma foreign key constraint failed
+          status = HttpStatus.BAD_REQUEST;
+          message = 'Invalid reference to related resource';
+          errorCode = 'FOREIGN_KEY_CONSTRAINT_FAILED';
+          break;
+        case 'P2014':
+          // Prisma relation violation
+          status = HttpStatus.BAD_REQUEST;
+          message = 'Invalid relation configuration for this operation';
+          errorCode = 'RELATION_VIOLATION';
+          break;
+        case 'P2016':
+          // Prisma query interpretation error
+          status = HttpStatus.BAD_REQUEST;
+          message = 'Invalid query parameters for this operation';
+          errorCode = 'QUERY_INTERPRETATION_ERROR';
+          break;
+        default:
+          if (code.startsWith('P')) {
+            // Other Prisma errors
+            status = HttpStatus.BAD_REQUEST;
+            message = 'Database operation failed';
+            errorCode = 'DATABASE_ERROR';
+          }
+          break;
       }
     }
 
     // Log the error with structured logging
     const errorStack = exception instanceof Error ? exception.stack : undefined;
 
-    this.logger.error(
+    logger.error(
       `${request.method} ${request.url} - Status: ${status} - ${message}`,
       errorStack,
       'GlobalExceptionFilter',

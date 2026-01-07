@@ -8,15 +8,72 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AppLoggerService } from '../logger/logger.service';
 import { RequestWithContext } from '../middleware/request-context.middleware';
+import { ConfigService } from '@nestjs/config';
+
+/**
+ * List of sensitive field names to sanitize in request bodies
+ */
+const SENSITIVE_FIELDS = [
+  'password',
+  'refreshToken',
+  'token',
+  'accessToken',
+  'apiKey',
+  'secret',
+  'secretKey',
+  'privateKey',
+  'credential',
+  'credentials',
+];
+
+/**
+ * Recursively sanitize sensitive fields in an object
+ * @param obj The object to sanitize
+ * @returns A new object with sensitive fields replaced with '***'
+ */
+function deepSanitize(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(deepSanitize);
+  }
+
+  if (typeof obj === 'object') {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Check if key matches any sensitive field (case-insensitive)
+      const isSensitive = SENSITIVE_FIELDS.some(
+        (field) =>
+          key.toLowerCase() === field.toLowerCase() ||
+          key.toLowerCase().includes(field.toLowerCase()),
+      );
+
+      if (isSensitive) {
+        // Sanitize sensitive fields regardless of their type
+        sanitized[key] = '***';
+      } else if (typeof value === 'object' && value !== null) {
+        sanitized[key] = deepSanitize(value);
+      } else {
+        sanitized[key] = value;
+      }
+    }
+    return sanitized;
+  }
+
+  return obj;
+}
 
 /**
  * Interceptor for logging all API requests and responses with structured logging
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  constructor(private readonly logger: AppLoggerService) {
-    this.logger.setContext('LoggingInterceptor');
-  }
+  constructor(
+    private readonly loggerService: AppLoggerService,
+    private readonly configService: ConfigService,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<RequestWithContext>();
@@ -27,16 +84,20 @@ export class LoggingInterceptor implements NestInterceptor {
     const userAgent = request.headers['user-agent'] || '';
     const now = Date.now();
 
+    // Create a new logger instance for this request to avoid state contamination
+    const logger = new AppLoggerService(this.configService);
+    logger.setContext('LoggingInterceptor');
+
     // Set request context in logger
     if (request.requestId) {
-      this.logger.setRequestId(request.requestId);
+      logger.setRequestId(request.requestId);
     }
     if (request.user?.id) {
-      this.logger.setUserId(request.user.id);
+      logger.setUserId(request.user.id);
     }
 
     // Log incoming request
-    this.logger.log(`Incoming ${method} ${url}`, 'LoggingInterceptor', {
+    logger.log(`Incoming ${method} ${url}`, 'LoggingInterceptor', {
       method,
       url,
       ip,
@@ -50,12 +111,10 @@ export class LoggingInterceptor implements NestInterceptor {
       typeof body === 'object' &&
       Object.keys(body).length > 0
     ) {
-      const sanitizedBody: Record<string, unknown> = { ...body };
-      if ('password' in sanitizedBody) sanitizedBody.password = '***';
-      if ('refreshToken' in sanitizedBody) sanitizedBody.refreshToken = '***';
-      if ('token' in sanitizedBody) sanitizedBody.token = '***';
+      // Deep sanitize the body to handle nested sensitive fields
+      const sanitizedBody = deepSanitize(body);
 
-      this.logger.debug(`Request Body`, 'LoggingInterceptor', {
+      logger.debug(`Request Body`, 'LoggingInterceptor', {
         body: sanitizedBody,
       });
     }
@@ -64,7 +123,7 @@ export class LoggingInterceptor implements NestInterceptor {
       tap({
         next: () => {
           const responseTime = Date.now() - now;
-          this.logger.log(`Completed ${method} ${url}`, 'LoggingInterceptor', {
+          logger.log(`Completed ${method} ${url}`, 'LoggingInterceptor', {
             method,
             url,
             responseTime,

@@ -14,9 +14,13 @@ import { Role, MESSAGES } from '../constants';
 
 // Mock the utils module
 jest.mock('../utils', () => ({
-  hashPassword: jest.fn((password: string) => Promise.resolve(`hashed_${password}`)),
+  hashPassword: jest.fn((password: string) =>
+    Promise.resolve(`hashed_${password}`),
+  ),
   comparePassword: jest.fn(),
-  parseJwtExpiration: jest.fn((value: string, defaultValue: string) => value || defaultValue),
+  parseJwtExpiration: jest.fn(
+    (value: string, defaultValue: string) => value || defaultValue,
+  ),
 }));
 
 describe('AuthService', () => {
@@ -75,7 +79,9 @@ describe('AuthService', () => {
 
       prismaService.user.findUnique.mockResolvedValue(null);
       prismaService.user.create.mockResolvedValue(createdUser);
-      jwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
+      jwtService.sign
+        .mockReturnValueOnce('access-token')
+        .mockReturnValueOnce('refresh-token');
 
       const result = await service.signUp(signUpDto);
 
@@ -106,8 +112,12 @@ describe('AuthService', () => {
     it('should throw ConflictException if user already exists', async () => {
       prismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      await expect(service.signUp(signUpDto)).rejects.toThrow(ConflictException);
-      await expect(service.signUp(signUpDto)).rejects.toThrow(MESSAGES.AUTH.USER_EXISTS);
+      await expect(service.signUp(signUpDto)).rejects.toThrow(
+        ConflictException,
+      );
+      await expect(service.signUp(signUpDto)).rejects.toThrow(
+        MESSAGES.AUTH.USER_EXISTS,
+      );
 
       expect(prismaService.user.create).not.toHaveBeenCalled();
     });
@@ -150,17 +160,22 @@ describe('AuthService', () => {
 
     it('should successfully login with valid credentials', async () => {
       const { comparePassword } = require('../utils');
-      
+
       prismaService.user.findUnique.mockResolvedValue(mockUser);
       comparePassword.mockResolvedValue(true);
-      jwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
+      jwtService.sign
+        .mockReturnValueOnce('access-token')
+        .mockReturnValueOnce('refresh-token');
 
       const result = await service.login(loginDto);
 
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: loginDto.email },
       });
-      expect(comparePassword).toHaveBeenCalledWith(loginDto.password, mockUser.password);
+      expect(comparePassword).toHaveBeenCalledWith(
+        loginDto.password,
+        mockUser.password,
+      );
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('accessToken', 'access-token');
       expect(result).toHaveProperty('refreshToken', 'refresh-token');
@@ -175,18 +190,26 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException if user not found', async () => {
       prismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.login(loginDto)).rejects.toThrow(MESSAGES.AUTH.INVALID_CREDENTIALS);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.login(loginDto)).rejects.toThrow(
+        MESSAGES.AUTH.INVALID_CREDENTIALS,
+      );
     });
 
     it('should throw UnauthorizedException if password is invalid', async () => {
       const { comparePassword } = require('../utils');
-      
+
       prismaService.user.findUnique.mockResolvedValue(mockUser);
       comparePassword.mockResolvedValue(false);
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.login(loginDto)).rejects.toThrow(MESSAGES.AUTH.INVALID_CREDENTIALS);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.login(loginDto)).rejects.toThrow(
+        MESSAGES.AUTH.INVALID_CREDENTIALS,
+      );
     });
   });
 
@@ -201,7 +224,9 @@ describe('AuthService', () => {
     it('should successfully refresh tokens with valid refresh token', async () => {
       jwtService.verify.mockReturnValue(payload);
       prismaService.user.findUnique.mockResolvedValue(mockUser);
-      jwtService.sign.mockReturnValueOnce('new-access-token').mockReturnValueOnce('new-refresh-token');
+      jwtService.sign
+        .mockReturnValueOnce('new-access-token')
+        .mockReturnValueOnce('new-refresh-token');
 
       const result = await service.refreshToken(refreshToken);
 
@@ -221,16 +246,24 @@ describe('AuthService', () => {
         throw new Error('Invalid token');
       });
 
-      await expect(service.refreshToken('invalid-token')).rejects.toThrow(UnauthorizedException);
-      await expect(service.refreshToken('invalid-token')).rejects.toThrow(MESSAGES.AUTH.TOKEN_INVALID);
+      await expect(service.refreshToken('invalid-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.refreshToken('invalid-token')).rejects.toThrow(
+        MESSAGES.AUTH.TOKEN_INVALID,
+      );
     });
 
     it('should throw UnauthorizedException with TOKEN_INVALID if user not found', async () => {
       jwtService.verify.mockReturnValue(payload);
       prismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.refreshToken(refreshToken)).rejects.toThrow(UnauthorizedException);
-      await expect(service.refreshToken(refreshToken)).rejects.toThrow(MESSAGES.AUTH.TOKEN_INVALID);
+      await expect(service.refreshToken(refreshToken)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.refreshToken(refreshToken)).rejects.toThrow(
+        MESSAGES.AUTH.TOKEN_INVALID,
+      );
     });
   });
 
@@ -252,7 +285,9 @@ describe('AuthService', () => {
 
       prismaService.user.findUnique.mockResolvedValue(null);
       prismaService.user.create.mockResolvedValue(createdUser);
-      jwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
+      jwtService.sign
+        .mockReturnValueOnce('access-token')
+        .mockReturnValueOnce('refresh-token');
 
       await service.signUp(signUpDto as any);
 
