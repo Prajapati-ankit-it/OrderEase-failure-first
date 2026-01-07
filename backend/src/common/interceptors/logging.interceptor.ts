@@ -11,6 +11,60 @@ import { RequestWithContext } from '../middleware/request-context.middleware';
 import { ConfigService } from '@nestjs/config';
 
 /**
+ * List of sensitive field names to sanitize in request bodies
+ */
+const SENSITIVE_FIELDS = [
+  'password',
+  'refreshToken',
+  'token',
+  'accessToken',
+  'apiKey',
+  'secret',
+  'secretKey',
+  'privateKey',
+  'credential',
+  'credentials',
+];
+
+/**
+ * Recursively sanitize sensitive fields in an object
+ * @param obj The object to sanitize
+ * @returns A new object with sensitive fields replaced with '***'
+ */
+function deepSanitize(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(deepSanitize);
+  }
+
+  if (typeof obj === 'object') {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Check if key matches any sensitive field (case-insensitive)
+      const isSensitive = SENSITIVE_FIELDS.some(
+        (field) =>
+          key.toLowerCase() === field.toLowerCase() ||
+          key.toLowerCase().includes(field.toLowerCase()),
+      );
+
+      if (isSensitive && typeof value === 'string') {
+        sanitized[key] = '***';
+      } else if (typeof value === 'object' && value !== null) {
+        sanitized[key] = deepSanitize(value);
+      } else {
+        sanitized[key] = value;
+      }
+    }
+    return sanitized;
+  }
+
+  return obj;
+}
+
+/**
  * Interceptor for logging all API requests and responses with structured logging
  */
 @Injectable()
@@ -56,10 +110,8 @@ export class LoggingInterceptor implements NestInterceptor {
       typeof body === 'object' &&
       Object.keys(body).length > 0
     ) {
-      const sanitizedBody: Record<string, unknown> = { ...body };
-      if ('password' in sanitizedBody) sanitizedBody.password = '***';
-      if ('refreshToken' in sanitizedBody) sanitizedBody.refreshToken = '***';
-      if ('token' in sanitizedBody) sanitizedBody.token = '***';
+      // Deep sanitize the body to handle nested sensitive fields
+      const sanitizedBody = deepSanitize(body);
 
       logger.debug(`Request Body`, 'LoggingInterceptor', {
         body: sanitizedBody,

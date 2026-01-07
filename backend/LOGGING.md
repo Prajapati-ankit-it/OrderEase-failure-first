@@ -118,9 +118,49 @@ Logs all incoming requests and outgoing responses.
 
 **Features:**
 - Logs request method, URL, IP, and user agent
-- Sanitizes sensitive data (passwords, tokens)
+- **Deep sanitization** of sensitive data in request bodies
 - Tracks response times
 - Includes correlation ID and user ID when available
+
+**Sensitive Data Sanitization:**
+The interceptor automatically sanitizes the following field names (case-insensitive) at all nesting levels:
+- `password`
+- `refreshToken`
+- `token`
+- `accessToken`
+- `apiKey`
+- `secret`
+- `secretKey`
+- `privateKey`
+- `credential`
+- `credentials`
+
+**Example:**
+```typescript
+// Request body:
+{
+  user: {
+    email: "test@test.com",
+    password: "secret123"
+  },
+  config: {
+    apiKey: "sk-12345"
+  }
+}
+
+// Logged as:
+{
+  user: {
+    email: "test@test.com",
+    password: "***"
+  },
+  config: {
+    apiKey: "***"
+  }
+}
+```
+
+**Note:** Fields containing sensitive keywords (e.g., `userPassword`, `mySecret`) are also sanitized.
 
 ## Configuration
 
