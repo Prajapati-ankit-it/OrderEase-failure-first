@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   CreateOrderDto,
   CreateOrderFromCartDto,
@@ -91,6 +91,10 @@ export class OrderService {
       return await this.orderRepository.create(order);
     } catch (error) {
       if (error instanceof OrderDomainError) {
+        // Map domain errors to appropriate HTTP exceptions
+        if (error.code === 'EMPTY_ORDER' || error.code === 'INVALID_QUANTITY' || error.code === 'INVALID_PRICE') {
+          throw new BadRequestException(error.message);
+        }
         throw new NotFoundException(error.message);
       }
       throw error;

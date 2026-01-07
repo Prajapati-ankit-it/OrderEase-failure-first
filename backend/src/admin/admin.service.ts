@@ -9,6 +9,7 @@ import {
   type IOrderRepository,
   ORDER_REPOSITORY,
 } from '../order/infra/order.repository.interface';
+import { User } from '../user/domain/user.entity';
 
 @Injectable()
 export class AdminService {
@@ -107,7 +108,16 @@ export class AdminService {
       throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
     }
 
-    const updatedUser = await this.userRepository.update(id, updateUserDto as any);
+    // Create properly typed update object
+    const updateData: { name?: string; email?: string } = {};
+    if (updateUserDto.name !== undefined) {
+      updateData.name = updateUserDto.name;
+    }
+    if (updateUserDto.email !== undefined) {
+      updateData.email = updateUserDto.email;
+    }
+
+    const updatedUser = await this.userRepository.update(id, updateData as Partial<User>);
 
     return updatedUser.toSafeUser();
   }

@@ -16,6 +16,7 @@ import {
   ORDER_REPOSITORY,
 } from '../order/infra/order.repository.interface';
 import { UserDomainError } from './domain/user.errors';
+import { User } from './domain/user.entity';
 
 @Injectable()
 export class UserService {
@@ -49,9 +50,13 @@ export class UserService {
       throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
     }
 
-    const updatedUser = await this.userRepository.update(userId, {
-      name: updateProfileDto.name,
-    } as Partial<any>);
+    // Create a properly typed update object
+    const updateData: { name?: string } = {};
+    if (updateProfileDto.name !== undefined) {
+      updateData.name = updateProfileDto.name;
+    }
+
+    const updatedUser = await this.userRepository.update(userId, updateData as Partial<User>);
 
     return updatedUser.toSafeUser();
   }

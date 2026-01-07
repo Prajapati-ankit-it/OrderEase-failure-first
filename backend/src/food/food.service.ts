@@ -57,8 +57,27 @@ export class FoodService {
   async update(id: string, updateFoodDto: UpdateFoodDto) {
     await this.findOne(id); // Check if exists
 
-    // Pass DTO directly as it already has the correct structure
-    return this.foodRepository.update(id, updateFoodDto as Partial<Food>);
+    // Create properly typed update object
+    const updateData: {
+      name?: string;
+      description?: string;
+      price?: number;
+      category?: string;
+      image?: string;
+      isAvailable?: boolean;
+    } = {};
+
+    if (updateFoodDto.name !== undefined) updateData.name = updateFoodDto.name;
+    if (updateFoodDto.description !== undefined)
+      updateData.description = updateFoodDto.description;
+    if (updateFoodDto.price !== undefined) updateData.price = updateFoodDto.price;
+    if (updateFoodDto.category !== undefined)
+      updateData.category = updateFoodDto.category;
+    if (updateFoodDto.image !== undefined) updateData.image = updateFoodDto.image;
+    if (updateFoodDto.isAvailable !== undefined)
+      updateData.isAvailable = updateFoodDto.isAvailable;
+
+    return this.foodRepository.update(id, updateData as Partial<Food>);
   }
 
   /**
