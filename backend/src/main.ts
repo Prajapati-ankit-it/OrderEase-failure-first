@@ -3,13 +3,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import {
-  AppLoggerService,
-  GlobalExceptionFilter,
-  LoggingInterceptor,
-} from './common';
+import { AppLoggerService,  GlobalExceptionFilter,  LoggingInterceptor} from './common';
+import { LoggingInterceptor, GlobalExceptionFilter } from './gateway';
+import { validateEnv } from './config';
+
 
 async function bootstrap() {
+  // Validate environment variables before starting the application
+  validateEnv();
+
   const app = await NestFactory.create(AppModule);
 
   // Get config service

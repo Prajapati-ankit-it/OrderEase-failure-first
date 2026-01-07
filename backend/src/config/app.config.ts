@@ -1,7 +1,11 @@
 import { registerAs } from '@nestjs/config';
+import { validateEnv } from './env.schema';
 
-export default registerAs('app', () => ({
-  port: parseInt(process.env.PORT ?? '3000', 10),
-  nodeEnv: process.env.NODE_ENV ?? 'development',
-  corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3001',
-}));
+export default registerAs('app', () => {
+  const env = validateEnv();
+  return {
+    port: env.PORT,
+    nodeEnv: env.NODE_ENV,
+    corsOrigin: env.CORS_ORIGIN,
+  };
+});
