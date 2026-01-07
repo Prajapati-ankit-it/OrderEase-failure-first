@@ -3,7 +3,12 @@ import { INestApplication, NotFoundException, Logger } from '@nestjs/common';
 import { LoggingInterceptor } from './logging.interceptor';
 import { GlobalExceptionFilter } from './exception.filter';
 
-describe('Error Logging (Duplicate Prevention)', () => {
+/**
+ * @deprecated These tests are for legacy gateway implementations.
+ * The application now uses the structured logging implementations from src/common.
+ * See src/common/filters and src/common/interceptors for the new implementations.
+ */
+describe('Error Logging (Duplicate Prevention) - Legacy', () => {
   let app: INestApplication;
   let loggerErrorSpy: jest.SpyInstance;
   let loggerLogSpy: jest.SpyInstance;

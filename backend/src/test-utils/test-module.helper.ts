@@ -135,6 +135,10 @@ export function createMockConfigService() {
 export function createMockJwtService() {
   return {
     sign: jest.fn().mockReturnValue('mock-jwt-token'),
-    verify: jest.fn().mockReturnValue({ sub: 'user-id', email: 'test@example.com', role: 'USER' }),
+    verify: jest.fn().mockReturnValue({
+      sub: 'user-id',
+      email: 'test@example.com',
+      role: 'USER',
+    }),
   };
 }
