@@ -9,7 +9,7 @@ describe('GlobalExceptionFilter', () => {
   let app: INestApplication;
   let filter: GlobalExceptionFilter;
   let logger: AppLoggerService;
-  let loggerErrorSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
@@ -34,7 +34,8 @@ describe('GlobalExceptionFilter', () => {
     const configService = moduleRef.get<ConfigService>(ConfigService);
     filter = new GlobalExceptionFilter(logger, configService);
 
-    loggerErrorSpy = jest.spyOn(logger, 'error');
+    // Spy on console.error since the filter creates its own logger instance
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
   });
 
   afterEach(async () => {
@@ -76,7 +77,7 @@ describe('GlobalExceptionFilter', () => {
         requestId: 'test-request-id',
       }),
     );
-    expect(loggerErrorSpy).toHaveBeenCalled();
+    expect(consoleErrorSpy).toHaveBeenCalled();
   });
 
   it('should include requestId in response', () => {
@@ -131,9 +132,10 @@ describe('GlobalExceptionFilter', () => {
 
     filter.catch(exception, mockHost as any);
 
-    expect(loggerErrorSpy).toHaveBeenCalled();
-    // The logger should have userId set
-    expect(logger['userId']).toBe('user-123');
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    // Verify the log contains the userId in the output
+    const logOutput = JSON.parse(consoleErrorSpy.mock.calls[0][0]);
+    expect(logOutput.userId).toBe('user-123');
   });
 
   it('should handle Prisma P2002 errors', () => {

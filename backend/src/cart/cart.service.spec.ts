@@ -225,8 +225,12 @@ describe('CartService', () => {
     it('should throw NotFoundException if food item not found', async () => {
       prismaService.food.findUnique.mockResolvedValue(null);
 
-      await expect(service.addToCart('user-1', addToCartDto)).rejects.toThrow(NotFoundException);
-      await expect(service.addToCart('user-1', addToCartDto)).rejects.toThrow('Food item not found');
+      await expect(service.addToCart('user-1', addToCartDto)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.addToCart('user-1', addToCartDto)).rejects.toThrow(
+        'Food item not found',
+      );
     });
 
     it('should throw BadRequestException if food item is not available', async () => {
@@ -235,8 +239,12 @@ describe('CartService', () => {
         isAvailable: false,
       });
 
-      await expect(service.addToCart('user-1', addToCartDto)).rejects.toThrow(BadRequestException);
-      await expect(service.addToCart('user-1', addToCartDto)).rejects.toThrow('Food item is not available');
+      await expect(service.addToCart('user-1', addToCartDto)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.addToCart('user-1', addToCartDto)).rejects.toThrow(
+        'Food item is not available',
+      );
     });
   });
 
@@ -290,8 +298,12 @@ describe('CartService', () => {
     it('should throw NotFoundException if cart not found', async () => {
       prismaService.cart.findUnique.mockResolvedValue(null);
 
-      await expect(service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto)).rejects.toThrow(NotFoundException);
-      await expect(service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto)).rejects.toThrow('Cart not found');
+      await expect(
+        service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto),
+      ).rejects.toThrow('Cart not found');
     });
 
     it('should throw NotFoundException if cart item not found', async () => {
@@ -303,8 +315,12 @@ describe('CartService', () => {
       });
       prismaService.cartItem.findUnique.mockResolvedValue(null);
 
-      await expect(service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto)).rejects.toThrow(NotFoundException);
-      await expect(service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto)).rejects.toThrow('Cart item not found');
+      await expect(
+        service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto),
+      ).rejects.toThrow('Cart item not found');
     });
 
     it('should throw NotFoundException if cart item does not belong to user cart', async () => {
@@ -319,7 +335,9 @@ describe('CartService', () => {
         cartId: 'different-cart-id',
       });
 
-      await expect(service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateCartItem('user-1', 'cart-item-1', updateCartItemDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -346,7 +364,9 @@ describe('CartService', () => {
     it('should throw NotFoundException if cart not found', async () => {
       prismaService.cart.findUnique.mockResolvedValue(null);
 
-      await expect(service.removeFromCart('user-1', 'cart-item-1')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.removeFromCart('user-1', 'cart-item-1'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException if cart item not found', async () => {
@@ -358,7 +378,9 @@ describe('CartService', () => {
       });
       prismaService.cartItem.findUnique.mockResolvedValue(null);
 
-      await expect(service.removeFromCart('user-1', 'cart-item-1')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.removeFromCart('user-1', 'cart-item-1'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -387,8 +409,12 @@ describe('CartService', () => {
     it('should throw NotFoundException if cart not found', async () => {
       prismaService.cart.findUnique.mockResolvedValue(null);
 
-      await expect(service.clearCart('user-1')).rejects.toThrow(NotFoundException);
-      await expect(service.clearCart('user-1')).rejects.toThrow('Cart not found');
+      await expect(service.clearCart('user-1')).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.clearCart('user-1')).rejects.toThrow(
+        'Cart not found',
+      );
     });
   });
 });

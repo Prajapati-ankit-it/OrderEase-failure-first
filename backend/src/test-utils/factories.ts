@@ -79,7 +79,8 @@ export async function createTestFood(
   return prisma.food.create({
     data: {
       name: overrides?.name || `Test Food ${++foodCounter}`,
-      description: overrides?.description || `Description for test food ${foodCounter}`,
+      description:
+        overrides?.description || `Description for test food ${foodCounter}`,
       price: overrides?.price ?? 10.99,
       category: overrides?.category || 'Test Category',
       image: overrides?.image || `https://example.com/food${foodCounter}.jpg`,

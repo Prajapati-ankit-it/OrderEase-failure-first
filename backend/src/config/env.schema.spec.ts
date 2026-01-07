@@ -15,8 +15,7 @@ describe('Environment Validation', () => {
 
   describe('validateEnv', () => {
     it('should pass with valid environment variables', () => {
-      process.env.DATABASE_URL =
-        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/dbname';
       process.env.JWT_SECRET =
         'a-very-secure-secret-that-is-at-least-32-characters-long';
       process.env.JWT_REFRESH_SECRET =
@@ -58,8 +57,7 @@ describe('Environment Validation', () => {
     });
 
     it('should fail when JWT_SECRET is too short', () => {
-      process.env.DATABASE_URL =
-        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/dbname';
       process.env.JWT_SECRET = 'tooshort';
       process.env.JWT_REFRESH_SECRET =
         'a-very-secure-refresh-secret-that-is-at-least-32-characters';
@@ -68,8 +66,7 @@ describe('Environment Validation', () => {
     });
 
     it('should fail when JWT_SECRET uses default value', () => {
-      process.env.DATABASE_URL =
-        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/dbname';
       process.env.JWT_SECRET =
         'your_super_secret_jwt_key_here_change_in_production';
       process.env.JWT_REFRESH_SECRET =
@@ -79,8 +76,7 @@ describe('Environment Validation', () => {
     });
 
     it('should fail when JWT_REFRESH_SECRET is too short', () => {
-      process.env.DATABASE_URL =
-        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/dbname';
       process.env.JWT_SECRET =
         'a-very-secure-secret-that-is-at-least-32-characters-long';
       process.env.JWT_REFRESH_SECRET = 'tooshort';
@@ -89,8 +85,7 @@ describe('Environment Validation', () => {
     });
 
     it('should fail when PORT is invalid', () => {
-      process.env.DATABASE_URL =
-        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/dbname';
       process.env.JWT_SECRET =
         'a-very-secure-secret-that-is-at-least-32-characters-long';
       process.env.JWT_REFRESH_SECRET =
@@ -101,8 +96,7 @@ describe('Environment Validation', () => {
     });
 
     it('should fail when NODE_ENV has invalid value', () => {
-      process.env.DATABASE_URL =
-        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/dbname';
       process.env.JWT_SECRET =
         'a-very-secure-secret-that-is-at-least-32-characters-long';
       process.env.JWT_REFRESH_SECRET =
@@ -113,8 +107,7 @@ describe('Environment Validation', () => {
     });
 
     it('should use default values for optional fields', () => {
-      process.env.DATABASE_URL =
-        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/dbname';
       process.env.JWT_SECRET =
         'a-very-secure-secret-that-is-at-least-32-characters-long';
       process.env.JWT_REFRESH_SECRET =
@@ -132,8 +125,7 @@ describe('Environment Validation', () => {
     });
 
     it('should cache validation result and return same instance', () => {
-      process.env.DATABASE_URL =
-        'postgresql://user:pass@localhost:5432/dbname';
+      process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/dbname';
       process.env.JWT_SECRET =
         'a-very-secure-secret-that-is-at-least-32-characters-long';
       process.env.JWT_REFRESH_SECRET =

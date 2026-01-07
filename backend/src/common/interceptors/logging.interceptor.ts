@@ -8,15 +8,17 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AppLoggerService } from '../logger/logger.service';
 import { RequestWithContext } from '../middleware/request-context.middleware';
+import { ConfigService } from '@nestjs/config';
 
 /**
  * Interceptor for logging all API requests and responses with structured logging
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  constructor(private readonly logger: AppLoggerService) {
-    this.logger.setContext('LoggingInterceptor');
-  }
+  constructor(
+    private readonly loggerService: AppLoggerService,
+    private readonly configService: ConfigService,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<RequestWithContext>();
@@ -27,16 +29,20 @@ export class LoggingInterceptor implements NestInterceptor {
     const userAgent = request.headers['user-agent'] || '';
     const now = Date.now();
 
+    // Create a new logger instance for this request to avoid state contamination
+    const logger = new AppLoggerService(this.configService);
+    logger.setContext('LoggingInterceptor');
+
     // Set request context in logger
     if (request.requestId) {
-      this.logger.setRequestId(request.requestId);
+      logger.setRequestId(request.requestId);
     }
     if (request.user?.id) {
-      this.logger.setUserId(request.user.id);
+      logger.setUserId(request.user.id);
     }
 
     // Log incoming request
-    this.logger.log(`Incoming ${method} ${url}`, 'LoggingInterceptor', {
+    logger.log(`Incoming ${method} ${url}`, 'LoggingInterceptor', {
       method,
       url,
       ip,
@@ -55,7 +61,7 @@ export class LoggingInterceptor implements NestInterceptor {
       if ('refreshToken' in sanitizedBody) sanitizedBody.refreshToken = '***';
       if ('token' in sanitizedBody) sanitizedBody.token = '***';
 
-      this.logger.debug(`Request Body`, 'LoggingInterceptor', {
+      logger.debug(`Request Body`, 'LoggingInterceptor', {
         body: sanitizedBody,
       });
     }
@@ -64,7 +70,7 @@ export class LoggingInterceptor implements NestInterceptor {
       tap({
         next: () => {
           const responseTime = Date.now() - now;
-          this.logger.log(`Completed ${method} ${url}`, 'LoggingInterceptor', {
+          logger.log(`Completed ${method} ${url}`, 'LoggingInterceptor', {
             method,
             url,
             responseTime,

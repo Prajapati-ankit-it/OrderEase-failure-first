@@ -7,7 +7,9 @@ import { MESSAGES, Role } from '../constants';
 
 // Mock the utils module
 jest.mock('../utils', () => ({
-  hashPassword: jest.fn((password: string) => Promise.resolve(`hashed_${password}`)),
+  hashPassword: jest.fn((password: string) =>
+    Promise.resolve(`hashed_${password}`),
+  ),
   comparePassword: jest.fn(),
 }));
 
@@ -74,8 +76,12 @@ describe('UserService', () => {
     it('should throw NotFoundException if user not found', async () => {
       prismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.getProfile('non-existent')).rejects.toThrow(NotFoundException);
-      await expect(service.getProfile('non-existent')).rejects.toThrow(MESSAGES.USER.NOT_FOUND);
+      await expect(service.getProfile('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(service.getProfile('non-existent')).rejects.toThrow(
+        MESSAGES.USER.NOT_FOUND,
+      );
     });
   });
 
@@ -112,8 +118,12 @@ describe('UserService', () => {
     it('should throw NotFoundException if user not found', async () => {
       prismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.updateProfile('non-existent', updateProfileDto)).rejects.toThrow(NotFoundException);
-      await expect(service.updateProfile('non-existent', updateProfileDto)).rejects.toThrow(MESSAGES.USER.NOT_FOUND);
+      await expect(
+        service.updateProfile('non-existent', updateProfileDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateProfile('non-existent', updateProfileDto),
+      ).rejects.toThrow(MESSAGES.USER.NOT_FOUND);
     });
   });
 
@@ -133,7 +143,10 @@ describe('UserService', () => {
         password: 'hashed_newPassword456',
       });
 
-      const result = await service.updatePassword('user-123', updatePasswordDto);
+      const result = await service.updatePassword(
+        'user-123',
+        updatePasswordDto,
+      );
 
       expect(comparePassword).toHaveBeenCalledWith(
         updatePasswordDto.currentPassword,
@@ -149,8 +162,12 @@ describe('UserService', () => {
     it('should throw NotFoundException if user not found', async () => {
       prismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.updatePassword('non-existent', updatePasswordDto)).rejects.toThrow(NotFoundException);
-      await expect(service.updatePassword('non-existent', updatePasswordDto)).rejects.toThrow(MESSAGES.USER.NOT_FOUND);
+      await expect(
+        service.updatePassword('non-existent', updatePasswordDto),
+      ).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updatePassword('non-existent', updatePasswordDto),
+      ).rejects.toThrow(MESSAGES.USER.NOT_FOUND);
     });
 
     it('should throw UnauthorizedException if current password is invalid', async () => {
@@ -159,8 +176,12 @@ describe('UserService', () => {
       prismaService.user.findUnique.mockResolvedValue(mockUser);
       comparePassword.mockResolvedValue(false);
 
-      await expect(service.updatePassword('user-123', updatePasswordDto)).rejects.toThrow(UnauthorizedException);
-      await expect(service.updatePassword('user-123', updatePasswordDto)).rejects.toThrow(MESSAGES.AUTH.INVALID_CREDENTIALS);
+      await expect(
+        service.updatePassword('user-123', updatePasswordDto),
+      ).rejects.toThrow(UnauthorizedException);
+      await expect(
+        service.updatePassword('user-123', updatePasswordDto),
+      ).rejects.toThrow(MESSAGES.AUTH.INVALID_CREDENTIALS);
 
       expect(prismaService.user.update).not.toHaveBeenCalled();
     });

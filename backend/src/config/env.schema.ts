@@ -22,8 +22,7 @@ export const envSchema = z.object({
         val !== 'default-secret-change-me' &&
         val !== 'your_super_secret_jwt_key_here_change_in_production',
       {
-        message:
-          'JWT_SECRET must not use default/example values in production',
+        message: 'JWT_SECRET must not use default/example values in production',
       },
     ),
   JWT_EXPIRES_IN: z.string().default('7d'),
