@@ -15,11 +15,11 @@ describe('Error Logging (Duplicate Prevention)', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    
+
     // Apply global interceptor and filter
     app.useGlobalInterceptors(new LoggingInterceptor());
     app.useGlobalFilters(new GlobalExceptionFilter());
-    
+
     await app.init();
 
     // Spy on Logger methods
@@ -52,8 +52,8 @@ describe('Error Logging (Duplicate Prevention)', () => {
     filter.catch(exception, mockHost as any);
 
     // Should only be logged once by GlobalExceptionFilter
-    const errorCalls = loggerErrorSpy.mock.calls.filter(
-      (call) => call[0].includes('GET /api/test'),
+    const errorCalls = loggerErrorSpy.mock.calls.filter((call) =>
+      call[0].includes('GET /api/test'),
     );
 
     // Verify error is logged exactly once
