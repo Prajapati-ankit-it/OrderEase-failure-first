@@ -8,7 +8,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { CartService } from './cart.service';
-import { AddToCartDto, UpdateCartItemDto } from './cart.dto';
+import { AddToCartDto, UpdateCartItemDto } from './dto/cart.dto';
 import { Auth, CurrentUser } from '../auth/decorators';
 import { successResponse } from '../utils';
 

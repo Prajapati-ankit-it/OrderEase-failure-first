@@ -1,69 +1,63 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../database';
+import { Injectable, Inject } from '@nestjs/common';
+import {
+  type IFoodRepository,
+  FOOD_REPOSITORY,
+} from '../food/infra/food.repository.interface';
 
 @Injectable()
 export class PublicService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @Inject(FOOD_REPOSITORY)
+    private foodRepository: IFoodRepository,
+  ) {}
 
   /**
    * Get all available food items for the menu
    */
   async getMenu(category?: string) {
-    const where: { isAvailable: boolean; category?: string } = {
-      isAvailable: true,
-    };
+    const menuItems = await this.foodRepository.findAll(category, false);
 
-    if (category) {
-      where.category = category;
-    }
-
-    const menuItems = await this.prisma.food.findMany({
-      where,
-      orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        price: true,
-        category: true,
-        image: true,
-      },
-    });
-
-    return menuItems;
+    return menuItems.map((food) => ({
+      id: food.id,
+      name: food.name,
+      description: food.description,
+      price: food.price,
+      category: food.category,
+      image: food.image,
+    }));
   }
 
   /**
    * Get food item by ID
    */
   async getFoodById(id: string) {
-    const food = await this.prisma.food.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        price: true,
-        category: true,
-        image: true,
-        isAvailable: true,
-      },
-    });
+    const food = await this.foodRepository.findById(id);
 
-    return food;
+    if (!food) {
+      return null;
+    }
+
+    return {
+      id: food.id,
+      name: food.name,
+      description: food.description,
+      price: food.price,
+      category: food.category,
+      image: food.image,
+      isAvailable: food.isAvailable,
+    };
   }
 
   /**
    * Get list of food categories
    */
   async getCategories() {
-    const foods = await this.prisma.food.findMany({
-      where: { isAvailable: true },
-      select: { category: true },
-      distinct: ['category'],
-    });
+    const foods = await this.foodRepository.findAll(undefined, false);
 
-    return foods.map((f) => f.category);
+    // Get unique categories
+    const categories = new Set(foods.map((f) => f.category));
+
+    return Array.from(categories);
   }
 
   /**

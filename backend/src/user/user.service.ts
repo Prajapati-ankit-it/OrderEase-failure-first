@@ -1,74 +1,70 @@
 import {
   Injectable,
+  Inject,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PrismaService } from '../database';
 import { UpdateProfileDto, UpdatePasswordDto } from './dto';
 import { hashPassword, comparePassword } from '../utils';
 import { MESSAGES } from '../constants';
+import {
+  type IUserRepository,
+  USER_REPOSITORY,
+} from './infra/user.repository.interface';
+import {
+  type IOrderRepository,
+  ORDER_REPOSITORY,
+} from '../order/infra/order.repository.interface';
+import { User } from './domain/user.entity';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @Inject(USER_REPOSITORY)
+    private userRepository: IUserRepository,
+    @Inject(ORDER_REPOSITORY)
+    private orderRepository: IOrderRepository,
+  ) {}
 
   /**
    * Get user profile
    */
   async getProfile(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
     }
 
-    return user;
+    return user.toSafeUser();
   }
 
   /**
    * Update user profile
    */
   async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
     }
 
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: updateProfileDto,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        updatedAt: true,
-      },
-    });
+    // Create a properly typed update object
+    const updateData: { name?: string } = {};
+    if (updateProfileDto.name !== undefined) {
+      updateData.name = updateProfileDto.name;
+    }
 
-    return updatedUser;
+    const updatedUser = await this.userRepository.update(userId, updateData);
+
+    return updatedUser.toSafeUser();
   }
 
   /**
    * Update user password
    */
   async updatePassword(userId: string, updatePasswordDto: UpdatePasswordDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
@@ -87,10 +83,7 @@ export class UserService {
     // Hash new password
     const hashedPassword = await hashPassword(updatePasswordDto.newPassword);
 
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { password: hashedPassword },
-    });
+    await this.userRepository.updatePassword(userId, hashedPassword);
 
     return { message: 'Password updated successfully' };
   }
@@ -99,32 +92,17 @@ export class UserService {
    * Get user's orders
    */
   async getUserOrders(userId: string, page = 1, limit = 10) {
-    const skip = (page - 1) * limit;
-
-    const [orders, total] = await Promise.all([
-      this.prisma.order.findMany({
-        where: { userId },
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          orderItems: {
-            include: {
-              food: true,
-            },
-          },
-        },
-      }),
-      this.prisma.order.count({ where: { userId } }),
-    ]);
+    const result = await this.orderRepository.findAll(page, limit, {
+      userId,
+    });
 
     return {
-      orders,
+      orders: result.orders,
       pagination: {
-        total,
+        total: result.total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(result.total / limit),
       },
     };
   }

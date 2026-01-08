@@ -1,48 +1,47 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../database';
-import { CreateFoodDto, UpdateFoodDto } from './food.dto';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { CreateFoodDto, UpdateFoodDto } from './dto/food.dto';
 import { MESSAGES } from '../constants';
+import { Food } from './domain/food.entity';
+import {
+  type IFoodRepository,
+  FOOD_REPOSITORY,
+} from './infra/food.repository.interface';
 
 @Injectable()
 export class FoodService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @Inject(FOOD_REPOSITORY)
+    private foodRepository: IFoodRepository,
+  ) {}
 
   /**
    * Create a new food item
    */
   async create(createFoodDto: CreateFoodDto) {
-    return this.prisma.food.create({
-      data: createFoodDto,
+    const food = new Food({
+      name: createFoodDto.name,
+      description: createFoodDto.description,
+      price: createFoodDto.price,
+      category: createFoodDto.category,
+      image: createFoodDto.image,
+      isAvailable: createFoodDto.isAvailable ?? true,
     });
+
+    return this.foodRepository.create(food);
   }
 
   /**
    * Get all food items
    */
   async findAll(category?: string, includeUnavailable = false) {
-    const where: { category?: string; isAvailable?: boolean } = {};
-
-    if (category) {
-      where.category = category;
-    }
-
-    if (!includeUnavailable) {
-      where.isAvailable = true;
-    }
-
-    return this.prisma.food.findMany({
-      where,
-      orderBy: { name: 'asc' },
-    });
+    return this.foodRepository.findAll(category, includeUnavailable);
   }
 
   /**
    * Get food item by ID
    */
   async findOne(id: string) {
-    const food = await this.prisma.food.findUnique({
-      where: { id },
-    });
+    const food = await this.foodRepository.findById(id);
 
     if (!food) {
       throw new NotFoundException(MESSAGES.GENERAL.NOT_FOUND);
@@ -57,10 +56,27 @@ export class FoodService {
   async update(id: string, updateFoodDto: UpdateFoodDto) {
     await this.findOne(id); // Check if exists
 
-    return this.prisma.food.update({
-      where: { id },
-      data: updateFoodDto,
-    });
+    // Create properly typed update object
+    const updateData: {
+      name?: string;
+      description?: string;
+      price?: number;
+      category?: string;
+      image?: string;
+      isAvailable?: boolean;
+    } = {};
+
+    if (updateFoodDto.name !== undefined) updateData.name = updateFoodDto.name;
+    if (updateFoodDto.description !== undefined)
+      updateData.description = updateFoodDto.description;
+    if (updateFoodDto.price !== undefined) updateData.price = updateFoodDto.price;
+    if (updateFoodDto.category !== undefined)
+      updateData.category = updateFoodDto.category;
+    if (updateFoodDto.image !== undefined) updateData.image = updateFoodDto.image;
+    if (updateFoodDto.isAvailable !== undefined)
+      updateData.isAvailable = updateFoodDto.isAvailable;
+
+    return this.foodRepository.update(id, updateData);
   }
 
   /**
@@ -69,9 +85,7 @@ export class FoodService {
   async remove(id: string) {
     await this.findOne(id); // Check if exists
 
-    await this.prisma.food.delete({
-      where: { id },
-    });
+    await this.foodRepository.delete(id);
 
     return { message: 'Food item deleted successfully' };
   }

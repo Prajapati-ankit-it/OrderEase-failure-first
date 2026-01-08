@@ -1,19 +1,25 @@
 import {
   Injectable,
+  Inject,
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../database';
 import { SignUpDto, LoginDto } from './dto';
 import { hashPassword, comparePassword, parseJwtExpiration } from '../utils';
 import { MESSAGES, Role } from '../constants';
+import {
+  type IUserRepository,
+  USER_REPOSITORY,
+} from '../user/infra/user.repository.interface';
+import { User, UserRole } from '../user/domain/user.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
+    @Inject(USER_REPOSITORY)
+    private userRepository: IUserRepository,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
@@ -25,9 +31,7 @@ export class AuthService {
     const { email, password, name, role } = signUpDto;
 
     // Check if user already exists
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const existingUser = await this.userRepository.findByEmail(email);
 
     if (existingUser) {
       throw new ConflictException(MESSAGES.AUTH.USER_EXISTS);
@@ -36,28 +40,26 @@ export class AuthService {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        role: role ?? Role.USER,
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
+    // Create user domain object
+    const user = new User({
+      email,
+      password: hashedPassword,
+      name,
+      role: (role ?? 'USER') as UserRole,
     });
 
+    // Persist user
+    const createdUser = await this.userRepository.create(user);
+
     // Generate tokens
-    const tokens = this.generateTokens(user.id, user.email, user.role);
+    const tokens = this.generateTokens(
+      createdUser.id!,
+      createdUser.email,
+      createdUser.role,
+    );
 
     return {
-      user,
+      user: createdUser.toSafeUser(),
       ...tokens,
     };
   }
@@ -69,9 +71,7 @@ export class AuthService {
     const { email, password } = loginDto;
 
     // Find user
-    const user = await this.prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException(MESSAGES.AUTH.INVALID_CREDENTIALS);
@@ -85,15 +85,10 @@ export class AuthService {
     }
 
     // Generate tokens
-    const tokens = this.generateTokens(user.id, user.email, user.role);
+    const tokens = this.generateTokens(user.id!, user.email, user.role);
 
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+      user: user.toSafeUser(),
       ...tokens,
     };
   }
@@ -141,23 +136,16 @@ export class AuthService {
         secret: this.configService.get<string>('jwt.refreshSecret'),
       });
 
-      const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-      });
+      const user = await this.userRepository.findById(payload.sub);
 
       if (!user) {
         throw new UnauthorizedException(MESSAGES.AUTH.USER_NOT_FOUND);
       }
 
-      const tokens = this.generateTokens(user.id, user.email, user.role);
+      const tokens = this.generateTokens(user.id!, user.email, user.role);
 
       return {
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        },
+        user: user.toSafeUser(),
         ...tokens,
       };
     } catch {

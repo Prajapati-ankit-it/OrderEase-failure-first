@@ -1,17 +1,42 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../database';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   CreateOrderDto,
   CreateOrderFromCartDto,
   UpdateOrderStatusDto,
-  OrderStatus,
-} from './order.dto';
+} from './dto/order.dto';
 import { MESSAGES } from '../constants';
-import { OrderStatus as PrismaOrderStatus } from '@prisma/client';
+import { Order, OrderItem } from './domain/order.entity';
+import {
+  validateOrderItems,
+  validateItemQuantities,
+  validateItemPrices,
+  validateFoodAvailability,
+  buildOrderItems,
+} from './domain/order.rules';
+import { OrderDomainError } from './domain/order.errors';
+import {
+  type IOrderRepository,
+  ORDER_REPOSITORY,
+} from './infra/order.repository.interface';
+import {
+  type IFoodRepository,
+  FOOD_REPOSITORY,
+} from '../food/infra/food.repository.interface';
+import {
+  type ICartRepository,
+  CART_REPOSITORY,
+} from '../cart/infra/cart.repository.interface';
 
 @Injectable()
 export class OrderService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @Inject(ORDER_REPOSITORY)
+    private orderRepository: IOrderRepository,
+    @Inject(FOOD_REPOSITORY)
+    private foodRepository: IFoodRepository,
+    @Inject(CART_REPOSITORY)
+    private cartRepository: ICartRepository,
+  ) {}
 
   /**
    * Create a new order (for logged-in users)
@@ -19,51 +44,61 @@ export class OrderService {
   async create(userId: string, createOrderDto: CreateOrderDto) {
     const { items } = createOrderDto;
 
-    // Get food items and calculate total
-    const foodItems = await this.prisma.food.findMany({
-      where: {
-        id: { in: items.map((item) => item.foodId) },
-        isAvailable: true,
-      },
-    });
-
-    if (foodItems.length !== items.length) {
-      throw new NotFoundException('Some food items are not available');
-    }
-
-    // Calculate total price
-    let totalPrice = 0;
-    const orderItems = items.map((item) => {
-      const food = foodItems.find((f) => f.id === item.foodId);
-      if (!food) {
-        throw new NotFoundException('Food item not found');
-      }
-      const itemTotal = food.price * item.quantity;
-      totalPrice += itemTotal;
-      return {
+    try {
+      // Validate items using domain rules
+      const requestedItems: OrderItem[] = items.map((item) => ({
         foodId: item.foodId,
         quantity: item.quantity,
-        price: food.price,
-      };
-    });
+        price: 0, // Will be set after fetching food
+      }));
 
-    // Create order with items
-    const order = await this.prisma.order.create({
-      data: {
+      validateOrderItems(requestedItems);
+      validateItemQuantities(requestedItems);
+
+      // Get available food items
+      const foodItems = await this.foodRepository.findAvailableByIds(
+        items.map((item) => item.foodId),
+      );
+
+      // Validate food availability
+      validateFoodAvailability(
+        items.map((item) => item.foodId),
+        foodItems.map((f) => f.id!),
+      );
+
+      // Build order items with prices
+      const foodPrices = new Map(
+        foodItems.map((food) => [food.id!, food.price]),
+      );
+
+      const orderItems = buildOrderItems(
+        items.map((item) => ({
+          foodId: item.foodId,
+          quantity: item.quantity,
+        })),
+        foodPrices,
+      );
+
+      validateItemPrices(orderItems);
+
+      // Create domain order
+      const order = new Order({
         userId,
-        totalPrice,
-        orderItems: {
-          create: orderItems,
-        },
-      },
-      include: {
-        orderItems: {
-          include: { food: true },
-        },
-      },
-    });
+        items: orderItems,
+      });
 
-    return order;
+      // Persist order
+      return await this.orderRepository.create(order);
+    } catch (error) {
+      if (error instanceof OrderDomainError) {
+        // Map domain errors to appropriate HTTP exceptions
+        if (error.code === 'EMPTY_ORDER' || error.code === 'INVALID_QUANTITY' || error.code === 'INVALID_PRICE') {
+          throw new BadRequestException(error.message);
+        }
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
   }
 
   /**
@@ -75,110 +110,75 @@ export class OrderService {
   ) {
     const { clearCart = true } = createOrderFromCartDto;
 
-    // Get user's cart with items
-    const cart = await this.prisma.cart.findUnique({
-      where: { userId },
-      include: {
-        cartItems: {
-          include: {
-            food: true,
-          },
-        },
-      },
-    });
-
-    if (!cart || cart.cartItems.length === 0) {
-      throw new NotFoundException('Cart is empty');
-    }
-
-    // Verify all food items are still available
-    const unavailableItems = cart.cartItems.filter(
-      (item) => !item.food.isAvailable,
-    );
-    if (unavailableItems.length > 0) {
-      throw new NotFoundException(
-        'Some items in your cart are no longer available',
+    try {
+      // Get user's cart with details
+      const cartData = await this.cartRepository.findByUserIdWithDetails(
+        userId,
       );
-    }
 
-    // Calculate total price and prepare order items
-    let totalPrice = 0;
-    const orderItems = cart.cartItems.map((cartItem) => {
-      const itemTotal = cartItem.food.price * cartItem.quantity;
-      totalPrice += itemTotal;
-      return {
-        foodId: cartItem.foodId,
-        quantity: cartItem.quantity,
-        price: cartItem.food.price,
-      };
-    });
+      if (!cartData || cartData.cart.isEmpty()) {
+        throw OrderDomainError.emptyCart();
+      }
 
-    // Use transaction to ensure order creation and cart clearing are atomic
-    const order = await this.prisma.$transaction(async (prisma) => {
-      // Create order with items
-      const newOrder = await prisma.order.create({
-        data: {
-          userId,
-          totalPrice,
-          orderItems: {
-            create: orderItems,
-          },
-        },
-        include: {
-          orderItems: {
-            include: { food: true },
-          },
-        },
+      const { cart, foodDetails } = cartData;
+
+      // Verify all food items are still available
+      const unavailableItems = cart.items.filter(
+        (item) => !foodDetails.get(item.foodId)?.isAvailable,
+      );
+      if (unavailableItems.length > 0) {
+        throw OrderDomainError.unavailableFood();
+      }
+
+      // Build order items from cart
+      const foodPrices = new Map(
+        Array.from(foodDetails.entries()).map(([id, details]) => [
+          id,
+          details.price,
+        ]),
+      );
+
+      const orderItems = buildOrderItems(cart.items, foodPrices);
+      validateOrderItems(orderItems);
+      validateItemQuantities(orderItems);
+      validateItemPrices(orderItems);
+
+      // Create domain order
+      const order = new Order({
+        userId,
+        items: orderItems,
       });
+
+      // Persist order
+      const createdOrder = await this.orderRepository.create(order);
 
       // Clear cart if requested
       if (clearCart) {
-        await prisma.cartItem.deleteMany({
-          where: { cartId: cart.id },
-        });
+        await this.cartRepository.clearCart(userId);
       }
 
-      return newOrder;
-    });
-
-    return order;
+      return createdOrder;
+    } catch (error) {
+      if (error instanceof OrderDomainError) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
   }
 
   /**
    * Get all orders (Admin only)
    */
   async findAll(page = 1, limit = 10, status?: string) {
-    const skip = (page - 1) * limit;
-    const where: { status?: PrismaOrderStatus } = {};
-
-    // Validate and set status filter if provided
-    if (status && Object.values(OrderStatus).includes(status as OrderStatus)) {
-      where.status = status as PrismaOrderStatus;
-    }
-
-    const [orders, total] = await Promise.all([
-      this.prisma.order.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          user: { select: { id: true, email: true, name: true } },
-          orderItems: {
-            include: { food: true },
-          },
-        },
-      }),
-      this.prisma.order.count({ where }),
-    ]);
+    const result = await this.orderRepository.findAll(page, limit, { status });
 
     return {
-      orders,
+      orders: result.orders,
       pagination: {
-        total,
+        total: result.total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(result.total / limit),
       },
     };
   }
@@ -187,15 +187,7 @@ export class OrderService {
    * Get order by ID
    */
   async findOne(id: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { id },
-      include: {
-        user: { select: { id: true, email: true, name: true } },
-        orderItems: {
-          include: { food: true },
-        },
-      },
-    });
+    const order = await this.orderRepository.findById(id);
 
     if (!order) {
       throw new NotFoundException(MESSAGES.GENERAL.NOT_FOUND);
@@ -210,16 +202,7 @@ export class OrderService {
   async updateStatus(id: string, updateStatusDto: UpdateOrderStatusDto) {
     await this.findOne(id); // Check if exists
 
-    return this.prisma.order.update({
-      where: { id },
-      data: { status: updateStatusDto.status as PrismaOrderStatus },
-      include: {
-        user: { select: { id: true, email: true, name: true } },
-        orderItems: {
-          include: { food: true },
-        },
-      },
-    });
+    return this.orderRepository.updateStatus(id, updateStatusDto.status);
   }
 
   /**
@@ -228,9 +211,7 @@ export class OrderService {
   async remove(id: string) {
     await this.findOne(id); // Check if exists
 
-    await this.prisma.order.delete({
-      where: { id },
-    });
+    await this.orderRepository.delete(id);
 
     return { message: 'Order deleted successfully' };
   }

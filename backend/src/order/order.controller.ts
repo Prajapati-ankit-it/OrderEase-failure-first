@@ -15,7 +15,7 @@ import {
   CreateOrderDto,
   CreateOrderFromCartDto,
   UpdateOrderStatusDto,
-} from './order.dto';
+} from './dto/order.dto';
 import { Auth, CurrentUser } from '../auth/decorators';
 import { Role, MESSAGES } from '../constants';
 import { successResponse } from '../utils';
