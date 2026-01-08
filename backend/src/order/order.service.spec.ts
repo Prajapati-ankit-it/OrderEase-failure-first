@@ -3,9 +3,6 @@ import { NotFoundException } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { MESSAGES } from '../constants';
 import { OrderStatus } from './dto/order.dto';
-import { ORDER_REPOSITORY } from './infra/order.repository.interface';
-import { FOOD_REPOSITORY } from '../food/infra/food.repository.interface';
-import { CART_REPOSITORY } from '../cart/infra/cart.repository.interface';
 
 describe('OrderService', () => {
   let service: OrderService;

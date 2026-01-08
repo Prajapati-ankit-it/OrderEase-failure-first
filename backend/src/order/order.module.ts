@@ -3,12 +3,11 @@ import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { PrismaOrderRepository } from './infra/prisma-order.repository';
 import { ORDER_REPOSITORY } from './infra/order.repository.interface';
-import { FOOD_REPOSITORY } from '../food/infra/food.repository.interface';
-import { PrismaFoodRepository } from '../food/infra/prisma-food.repository';
-import { CART_REPOSITORY } from '../cart/infra/cart.repository.interface';
-import { PrismaCartRepository } from '../cart/infra/prisma-cart.repository';
+import { FoodModule } from '../food/food.module';
+import { CartModule } from '../cart/cart.module';
 
 @Module({
+  imports: [FoodModule, CartModule],
   controllers: [OrderController],
   providers: [
     OrderService,
@@ -16,15 +15,7 @@ import { PrismaCartRepository } from '../cart/infra/prisma-cart.repository';
       provide: ORDER_REPOSITORY,
       useClass: PrismaOrderRepository,
     },
-    {
-      provide: FOOD_REPOSITORY,
-      useClass: PrismaFoodRepository,
-    },
-    {
-      provide: CART_REPOSITORY,
-      useClass: PrismaCartRepository,
-    },
   ],
-  exports: [OrderService],
+  exports: [OrderService, ORDER_REPOSITORY],
 })
 export class OrderModule {}

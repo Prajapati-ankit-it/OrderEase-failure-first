@@ -6,11 +6,11 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies';
 import { parseJwtExpiration } from '../utils';
-import { USER_REPOSITORY } from '../user/infra/user.repository.interface';
-import { PrismaUserRepository } from '../user/infra/prisma-user.repository';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
+    UserModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => {
@@ -31,14 +31,7 @@ import { PrismaUserRepository } from '../user/infra/prisma-user.repository';
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy,
-    {
-      provide: USER_REPOSITORY,
-      useClass: PrismaUserRepository,
-    },
-  ],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService, JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}

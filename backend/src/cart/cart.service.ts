@@ -118,10 +118,16 @@ export class CartService {
         throw CartDomainError.notFound();
       }
 
-      // Verify cart item exists
+      // Verify cart item exists and belongs to user's cart
       const cartItem = await this.cartRepository.getCartItem(itemId);
 
       if (!cartItem) {
+        throw CartDomainError.itemNotFound();
+      }
+
+      // Verify ownership
+      const ownsItem = await this.cartRepository.verifyItemOwnership(userId, itemId);
+      if (!ownsItem) {
         throw CartDomainError.itemNotFound();
       }
 
@@ -149,10 +155,16 @@ export class CartService {
         throw CartDomainError.notFound();
       }
 
-      // Verify cart item exists
+      // Verify cart item exists and belongs to user's cart
       const cartItem = await this.cartRepository.getCartItem(itemId);
 
       if (!cartItem) {
+        throw CartDomainError.itemNotFound();
+      }
+
+      // Verify ownership
+      const ownsItem = await this.cartRepository.verifyItemOwnership(userId, itemId);
+      if (!ownsItem) {
         throw CartDomainError.itemNotFound();
       }
 

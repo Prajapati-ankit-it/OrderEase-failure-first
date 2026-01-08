@@ -82,15 +82,6 @@ export class Order {
   }
 
   /**
-   * Update order status
-   * Domain method for status transitions
-   */
-  updateStatus(newStatus: OrderStatus): void {
-    this._status = newStatus;
-    this._updatedAt = new Date();
-  }
-
-  /**
    * Check if order can be cancelled
    * Business rule: only pending or preparing orders can be cancelled
    */

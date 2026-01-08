@@ -15,7 +15,6 @@ import {
   type IOrderRepository,
   ORDER_REPOSITORY,
 } from '../order/infra/order.repository.interface';
-import { UserDomainError } from './domain/user.errors';
 import { User } from './domain/user.entity';
 
 @Injectable()

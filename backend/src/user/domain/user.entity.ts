@@ -66,24 +66,6 @@ export class User {
   }
 
   /**
-   * Update password
-   */
-  updatePassword(newPassword: string): void {
-    this._password = newPassword;
-    this._updatedAt = new Date();
-  }
-
-  /**
-   * Update profile
-   */
-  updateProfile(name?: string): void {
-    if (name !== undefined) {
-      this._name = name;
-    }
-    this._updatedAt = new Date();
-  }
-
-  /**
    * Check if user is admin
    */
   isAdmin(): boolean {

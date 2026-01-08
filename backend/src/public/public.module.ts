@@ -2,18 +2,12 @@ import { Module } from '@nestjs/common';
 import { PublicController } from './public.controller';
 import { MenuController } from './menu.controller';
 import { PublicService } from './public.service';
-import { FOOD_REPOSITORY } from '../food/infra/food.repository.interface';
-import { PrismaFoodRepository } from '../food/infra/prisma-food.repository';
+import { FoodModule } from '../food/food.module';
 
 @Module({
+  imports: [FoodModule],
   controllers: [PublicController, MenuController],
-  providers: [
-    PublicService,
-    {
-      provide: FOOD_REPOSITORY,
-      useClass: PrismaFoodRepository,
-    },
-  ],
+  providers: [PublicService],
   exports: [PublicService],
 })
 export class PublicModule {}

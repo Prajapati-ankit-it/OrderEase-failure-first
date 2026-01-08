@@ -190,9 +190,23 @@ export class PrismaCartRepository implements ICartRepository {
 
     return {
       id: item.id,
+      cartId: item.cartId,
       foodId: item.foodId,
       quantity: item.quantity,
     };
+  }
+
+  async verifyItemOwnership(userId: string, itemId: string): Promise<boolean> {
+    const cart = await this.prisma.cart.findUnique({
+      where: { userId },
+      include: {
+        cartItems: {
+          where: { id: itemId },
+        },
+      },
+    });
+
+    return cart !== null && cart.cartItems.length > 0;
   }
 
   private toDomain(

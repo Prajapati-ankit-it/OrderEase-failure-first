@@ -14,7 +14,6 @@ import {
   USER_REPOSITORY,
 } from '../user/infra/user.repository.interface';
 import { User, UserRole } from '../user/domain/user.entity';
-import { UserDomainError } from '../user/domain/user.errors';
 
 @Injectable()
 export class AuthService {

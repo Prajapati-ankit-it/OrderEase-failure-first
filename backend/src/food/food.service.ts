@@ -2,7 +2,6 @@ import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { CreateFoodDto, UpdateFoodDto } from './dto/food.dto';
 import { MESSAGES } from '../constants';
 import { Food } from './domain/food.entity';
-import { FoodDomainError } from './domain/food.errors';
 import {
   type IFoodRepository,
   FOOD_REPOSITORY,

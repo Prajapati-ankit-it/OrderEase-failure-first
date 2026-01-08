@@ -14,6 +14,7 @@ export interface CartWithDetails {
 
 export interface CartItemData {
   id: string;
+  cartId: string;
   foodId: string;
   quantity: number;
 }
@@ -58,6 +59,11 @@ export interface ICartRepository {
    * Get cart item by ID
    */
   getCartItem(itemId: string): Promise<CartItemData | null>;
+
+  /**
+   * Verify cart item belongs to user's cart
+   */
+  verifyItemOwnership(userId: string, itemId: string): Promise<boolean>;
 }
 
 export const CART_REPOSITORY = Symbol('ICartRepository');
