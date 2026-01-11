@@ -17,11 +17,39 @@
  * @typedef {import('types/backend').Cart} Cart
  * @typedef {import('types/backend').CreateOrderDto} CreateOrderDto
  * @typedef {import('types/backend').Order} Order
+/**
  * @typedef {import('types/backend').UpdateOrderStatusDto} UpdateOrderStatusDto
  */
 
-import httpClient from './services/api/httpClient';
-import { API_ENDPOINTS } from './config/api.config';
+// These would be your actual imports in a real API service file:
+// import httpClient from '../../services/api/httpClient';
+// import { API_ENDPOINTS } from '../../config/api.config';
+
+// For this example file, we'll use placeholder implementations
+const httpClient = {
+  post: async () => ({ data: {} }),
+  get: async () => ({ data: {} }),
+  put: async () => ({ data: {} }),
+  delete: async () => ({ data: {} }),
+};
+
+const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/signup',
+  },
+  FOOD: {
+    LIST: '/food',
+    CREATE: '/food',
+  },
+  CART: {
+    ADD: '/cart',
+  },
+  ORDERS: {
+    CREATE: '/order',
+    UPDATE_STATUS: (id) => `/order/${id}/status`,
+  },
+};
 
 // ============================================================================
 // AUTH API EXAMPLES
