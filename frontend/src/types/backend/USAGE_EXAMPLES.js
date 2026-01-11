@@ -7,17 +7,17 @@
 
 // Import types for JSDoc annotations
 /**
- * @typedef {import('./types/backend').LoginDto} LoginDto
- * @typedef {import('./types/backend').SignUpDto} SignUpDto
- * @typedef {import('./types/backend').ApiResponse} ApiResponse
- * @typedef {import('./types/backend').AuthResponseData} AuthResponseData
- * @typedef {import('./types/backend').CreateFoodDto} CreateFoodDto
- * @typedef {import('./types/backend').Food} Food
- * @typedef {import('./types/backend').AddToCartDto} AddToCartDto
- * @typedef {import('./types/backend').Cart} Cart
- * @typedef {import('./types/backend').CreateOrderDto} CreateOrderDto
- * @typedef {import('./types/backend').Order} Order
- * @typedef {import('./types/backend').UpdateOrderStatusDto} UpdateOrderStatusDto
+ * @typedef {import('types/backend').LoginDto} LoginDto
+ * @typedef {import('types/backend').SignUpDto} SignUpDto
+ * @typedef {import('types/backend').ApiResponse} ApiResponse
+ * @typedef {import('types/backend').AuthResponseData} AuthResponseData
+ * @typedef {import('types/backend').CreateFoodDto} CreateFoodDto
+ * @typedef {import('types/backend').Food} Food
+ * @typedef {import('types/backend').AddToCartDto} AddToCartDto
+ * @typedef {import('types/backend').Cart} Cart
+ * @typedef {import('types/backend').CreateOrderDto} CreateOrderDto
+ * @typedef {import('types/backend').Order} Order
+ * @typedef {import('types/backend').UpdateOrderStatusDto} UpdateOrderStatusDto
  */
 
 import httpClient from './services/api/httpClient';
