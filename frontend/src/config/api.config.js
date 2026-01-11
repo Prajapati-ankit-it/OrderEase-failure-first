@@ -26,27 +26,34 @@ export const API_ENDPOINTS = {
   // Auth endpoints
   AUTH: {
     LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
+    REGISTER: '/auth/signup', // Backend uses /auth/signup
     PROFILE: '/auth/profile',
     REFRESH: '/auth/refresh',
     LOGOUT: '/auth/logout',
   },
-  // Menu endpoints
+  // Public Menu endpoints (for customers)
   MENU: {
     LIST: '/menu',
     BY_ID: (id) => `/menu/${id}`,
-    CREATE: '/menu',
-    UPDATE: (id) => `/menu/${id}`,
-    DELETE: (id) => `/menu/${id}`,
+  },
+  // Food endpoints (for admin menu management)
+  FOOD: {
+    LIST: '/food',
+    BY_ID: (id) => `/food/${id}`,
+    CREATE: '/food',
+    UPDATE: (id) => `/food/${id}`,
+    DELETE: (id) => `/food/${id}`,
   },
   // Order endpoints
   ORDERS: {
-    LIST: '/orders',
-    BY_ID: (id) => `/orders/${id}`,
-    CREATE: '/orders',
-    UPDATE_STATUS: (id) => `/orders/${id}/status`,
+    LIST: '/order',
+    BY_ID: (id) => `/order/${id}`,
+    CREATE: '/order',
+    CREATE_FROM_CART: '/order/from-cart',
+    UPDATE_STATUS: (id) => `/order/${id}/status`,
+    DELETE: (id) => `/order/${id}`,
   },
-  // Cart endpoints (if backend supports)
+  // Cart endpoints
   CART: {
     GET: '/cart',
     ADD: '/cart/add',

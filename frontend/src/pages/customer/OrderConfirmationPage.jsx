@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../../api/axios';
+import { ordersApi } from '../../services/api';
 import Navbar from '../../components/customer/Navbar';
 
 const OrderConfirmationPage = () => {
@@ -10,7 +10,7 @@ const OrderConfirmationPage = () => {
 
   const fetchOrder = useCallback(async () => {
     try {
-      const { data } = await api.get(`/orders/${orderId}`);
+      const data = await ordersApi.getOrderById(orderId);
       setOrder(data);
       setLoading(false);
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api/axios';
+import { ordersApi } from '../../services/api';
 import AdminNavbar from '../../components/admin/AdminNavbar';
 
 const OrdersManagementPage = () => {
@@ -18,7 +18,7 @@ const OrdersManagementPage = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data } = await api.get('/orders');
+      const data = await ordersApi.getAllOrders();
       setOrders(data);
       setLoading(false);
     } catch (error) {
@@ -29,7 +29,7 @@ const OrdersManagementPage = () => {
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
-      await api.put(`/orders/${orderId}/status`, { status: newStatus });
+      await ordersApi.updateOrderStatus(orderId, newStatus);
       fetchOrders();
       setSelectedOrder(null);
     } catch (error) {

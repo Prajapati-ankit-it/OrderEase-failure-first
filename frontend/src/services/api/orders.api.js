@@ -15,32 +15,36 @@ const ordersApi = {
    * @param {Array} orderData.items - Order items
    * @param {number} orderData.totalPrice - Total price
    * @param {string} orderData.orderType - Order type (dine-in/delivery)
-   * @param {string} orderData.address - Delivery address (optional)
+   * @param {string} orderData.tableNumber - Table number (optional)
+   * @param {string} orderData.deliveryAddress - Delivery address (optional)
    * @returns {Promise} Created order
    */
   createOrder: async (orderData) => {
-    try {
-      const response = await httpClient.post(API_ENDPOINTS.ORDERS.CREATE, orderData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await httpClient.post(API_ENDPOINTS.ORDERS.CREATE, orderData);
+    return response.data;
   },
 
   /**
-   * Get all orders (Admin only)
+   * Create order from cart
+   * @param {Object} orderData - Order data from cart
+   * @param {boolean} orderData.clearCart - Whether to clear the cart after creating order (optional, default: true)
+   * @returns {Promise} Created order
+   */
+  createOrderFromCart: async (orderData) => {
+    const response = await httpClient.post(API_ENDPOINTS.ORDERS.CREATE_FROM_CART, orderData);
+    return response.data;
+  },
+
+  /**
+   * Get all orders
    * @param {Object} params - Query parameters
    * @param {string} params.status - Filter by status
    * @param {string} params.orderType - Filter by order type
    * @returns {Promise} Array of orders
    */
   getAllOrders: async (params = {}) => {
-    try {
-      const response = await httpClient.get(API_ENDPOINTS.ORDERS.LIST, { params });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await httpClient.get(API_ENDPOINTS.ORDERS.LIST, { params });
+    return response.data;
   },
 
   /**
@@ -49,27 +53,29 @@ const ordersApi = {
    * @returns {Promise} Order data
    */
   getOrderById: async (id) => {
-    try {
-      const response = await httpClient.get(API_ENDPOINTS.ORDERS.BY_ID(id));
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await httpClient.get(API_ENDPOINTS.ORDERS.BY_ID(id));
+    return response.data;
   },
 
   /**
-   * Update order status (Admin only)
+   * Update order status
    * @param {string} id - Order ID
    * @param {string} status - New status
    * @returns {Promise} Updated order
    */
   updateOrderStatus: async (id, status) => {
-    try {
-      const response = await httpClient.put(API_ENDPOINTS.ORDERS.UPDATE_STATUS(id), { status });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await httpClient.put(API_ENDPOINTS.ORDERS.UPDATE_STATUS(id), { status });
+    return response.data;
+  },
+
+  /**
+   * Delete order
+   * @param {string} id - Order ID
+   * @returns {Promise}
+   */
+  deleteOrder: async (id) => {
+    const response = await httpClient.delete(API_ENDPOINTS.ORDERS.DELETE(id));
+    return response.data;
   },
 
   /**
@@ -77,12 +83,8 @@ const ordersApi = {
    * @returns {Promise} Order statistics
    */
   getOrderStats: async () => {
-    try {
-      const response = await httpClient.get(`${API_ENDPOINTS.ORDERS.LIST}/stats`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await httpClient.get(`${API_ENDPOINTS.ORDERS.LIST}/stats`);
+    return response.data;
   },
 };
 

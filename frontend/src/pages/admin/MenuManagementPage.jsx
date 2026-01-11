@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api/axios';
+import { foodApi } from '../../services/api';
 import AdminNavbar from '../../components/admin/AdminNavbar';
 
 const MenuManagementPage = () => {
@@ -24,7 +24,7 @@ const MenuManagementPage = () => {
 
   const fetchMenuItems = async () => {
     try {
-      const { data } = await api.get('/menu');
+      const data = await foodApi.getAllFoodItems();
       setMenuItems(data);
       setLoading(false);
     } catch (error) {
@@ -45,15 +45,15 @@ const MenuManagementPage = () => {
     e.preventDefault();
     try {
       if (editingItem) {
-        await api.put(`/menu/${editingItem._id}`, formData);
+        await foodApi.updateFoodItem(editingItem._id, formData);
       } else {
-        await api.post('/menu', formData);
+        await foodApi.createFoodItem(formData);
       }
       fetchMenuItems();
       handleCloseModal();
     } catch (error) {
       console.error('Error saving menu item:', error);
-      alert(error.response?.data?.message || 'Failed to save menu item');
+      alert(error.message || 'Failed to save menu item');
     }
   };
 
@@ -73,7 +73,7 @@ const MenuManagementPage = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
-        await api.delete(`/menu/${id}`);
+        await foodApi.deleteFoodItem(id);
         fetchMenuItems();
       } catch (error) {
         console.error('Error deleting menu item:', error);

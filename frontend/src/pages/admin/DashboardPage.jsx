@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../api/axios';
+import { ordersApi } from '../../services/api';
 import AdminNavbar from '../../components/admin/AdminNavbar';
 
 const DashboardPage = () => {
@@ -19,7 +19,7 @@ const DashboardPage = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const { data } = await api.get('/orders');
+      const data = await ordersApi.getAllOrders();
       
       const totalOrders = data.length;
       const pendingOrders = data.filter(o => o.status === 'pending' || o.status === 'preparing').length;

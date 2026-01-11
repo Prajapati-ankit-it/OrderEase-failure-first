@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import api from '../../api/axios';
+import { ordersApi } from '../../services/api';
 import { clearCart } from '../../redux/slices/cartSlice';
 import Navbar from '../../components/customer/Navbar';
 
@@ -51,11 +51,11 @@ const CheckoutPage = () => {
         deliveryAddress: formData.orderType === 'delivery' ? formData.deliveryAddress : undefined,
       };
 
-      const { data } = await api.post('/orders', orderData);
+      const data = await ordersApi.createOrder(orderData);
       dispatch(clearCart());
       navigate(`/order-confirmation/${data._id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to place order');
+      setError(err.message || 'Failed to place order');
       setLoading(false);
     }
   };

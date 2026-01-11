@@ -15,21 +15,17 @@ const authApi = {
    * @returns {Promise} User data with token
    */
   login: async (credentials) => {
-    try {
-      const response = await httpClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
-      
-      // Store tokens if present
-      if (response.data.token) {
-        TokenManager.setToken(response.data.token);
-      }
-      if (response.data.refreshToken) {
-        TokenManager.setRefreshToken(response.data.refreshToken);
-      }
-      
-      return response.data;
-    } catch (error) {
-      throw error;
+    const response = await httpClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
+    
+    // Store tokens if present
+    if (response.data.accessToken) {
+      TokenManager.setToken(response.data.accessToken);
     }
+    if (response.data.refreshToken) {
+      TokenManager.setRefreshToken(response.data.refreshToken);
+    }
+    
+    return response.data;
   },
 
   /**
@@ -42,21 +38,17 @@ const authApi = {
    * @returns {Promise} User data with token
    */
   register: async (userData) => {
-    try {
-      const response = await httpClient.post(API_ENDPOINTS.AUTH.REGISTER, userData);
-      
-      // Store tokens if present
-      if (response.data.token) {
-        TokenManager.setToken(response.data.token);
-      }
-      if (response.data.refreshToken) {
-        TokenManager.setRefreshToken(response.data.refreshToken);
-      }
-      
-      return response.data;
-    } catch (error) {
-      throw error;
+    const response = await httpClient.post(API_ENDPOINTS.AUTH.REGISTER, userData);
+    
+    // Store tokens if present
+    if (response.data.accessToken) {
+      TokenManager.setToken(response.data.accessToken);
     }
+    if (response.data.refreshToken) {
+      TokenManager.setRefreshToken(response.data.refreshToken);
+    }
+    
+    return response.data;
   },
 
   /**
@@ -64,12 +56,8 @@ const authApi = {
    * @returns {Promise} User profile data
    */
   getProfile: async () => {
-    try {
-      const response = await httpClient.get(API_ENDPOINTS.AUTH.PROFILE);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await httpClient.get(API_ENDPOINTS.AUTH.PROFILE);
+    return response.data;
   },
 
   /**
@@ -78,20 +66,16 @@ const authApi = {
    * @returns {Promise} New token data
    */
   refreshToken: async (refreshToken) => {
-    try {
-      const response = await httpClient.post(API_ENDPOINTS.AUTH.REFRESH, { refreshToken });
-      
-      if (response.data.token) {
-        TokenManager.setToken(response.data.token);
-      }
-      if (response.data.refreshToken) {
-        TokenManager.setRefreshToken(response.data.refreshToken);
-      }
-      
-      return response.data;
-    } catch (error) {
-      throw error;
+    const response = await httpClient.post(API_ENDPOINTS.AUTH.REFRESH, { refreshToken });
+    
+    if (response.data.accessToken) {
+      TokenManager.setToken(response.data.accessToken);
     }
+    if (response.data.refreshToken) {
+      TokenManager.setRefreshToken(response.data.refreshToken);
+    }
+    
+    return response.data;
   },
 
   /**
