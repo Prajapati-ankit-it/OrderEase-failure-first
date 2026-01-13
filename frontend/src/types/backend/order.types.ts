@@ -70,7 +70,10 @@ export interface Order {
  */
 export interface PaginatedOrders {
   orders: Order[];
-  total: number;
-  page: number;
-  limit: number;
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
