@@ -17,7 +17,6 @@
  * @typedef {import('types/backend').Cart} Cart
  * @typedef {import('types/backend').CreateOrderDto} CreateOrderDto
  * @typedef {import('types/backend').Order} Order
-/**
  * @typedef {import('types/backend').UpdateOrderStatusDto} UpdateOrderStatusDto
  */
 
@@ -166,6 +165,7 @@ function LoginComponent() {
   };
   
   // Component JSX...
+  return null; // Placeholder return for example
 }
 
 /**
@@ -195,6 +195,7 @@ function CreateFoodComponent() {
   };
   
   // Component JSX...
+  return null; // Placeholder return for example
 }
 
 export {
@@ -205,4 +206,6 @@ export {
   addToCartExample,
   createOrderExample,
   updateOrderStatusExample,
+  LoginComponent,
+  CreateFoodComponent,
 };

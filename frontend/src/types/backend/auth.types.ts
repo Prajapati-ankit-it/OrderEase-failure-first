@@ -4,6 +4,7 @@
  */
 
 import { Role } from './common.types';
+import { SafeUser } from './user.types';
 
 /**
  * LoginDto from backend/src/auth/dto/login.dto.ts
@@ -25,16 +26,10 @@ export interface SignUpDto {
 
 /**
  * Auth response data structure
+ * Backend returns user.toSafeUser() which is typed as SafeUser
  */
 export interface AuthResponseData {
   accessToken: string;
   refreshToken: string;
-  user: {
-    id: string;
-    email: string;
-    name?: string;
-    role: Role;
-    createdAt?: string;
-    updatedAt?: string;
-  };
+  user: SafeUser;
 }
