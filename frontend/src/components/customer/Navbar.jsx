@@ -1,10 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useNavbar } from '../../hooks';
 
 const Navbar = () => {
-  const { items } = useSelector((state) => state.cart);
-  const cartCount = items.reduce((total, item) => total + item.quantity, 0);
+  const { cartCount } = useNavbar();
 
   return (
     <nav className="bg-orange-600 text-white shadow-lg">

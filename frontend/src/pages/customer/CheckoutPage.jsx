@@ -18,6 +18,7 @@ const CheckoutPage = () => {
     redirectIfEmptyCart();
   }, [redirectIfEmptyCart]);
 
+  // Render nothing while cart is empty (redirect is in progress)
   if (items.length === 0) {
     return null;
   }

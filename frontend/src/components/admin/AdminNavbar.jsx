@@ -1,17 +1,9 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../redux/slices/authSlice';
+import { Link } from 'react-router-dom';
+import { useAdminNavbar } from '../../hooks';
 
 const AdminNavbar = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
-
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/admin/login');
-  };
+  const { user, handleLogout } = useAdminNavbar();
 
   return (
     <nav className="bg-gray-800 text-white shadow-lg">
