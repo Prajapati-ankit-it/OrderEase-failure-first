@@ -2,9 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useDashboard } from '../../hooks';
 import AdminNavbar from '../../components/admin/AdminNavbar';
+import { ErrorMessage } from '../../components/ui';
 
 const DashboardPage = () => {
-  const { stats, recentOrders, loading, getStatusColor } = useDashboard();
+  const { stats, recentOrders, loading, error, getStatusColor } = useDashboard();
 
   if (loading) {
     return (
@@ -23,6 +24,12 @@ const DashboardPage = () => {
       
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+
+        {error && (
+          <div className="mb-6">
+            <ErrorMessage message={error} />
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

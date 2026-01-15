@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMenuManagement } from '../../hooks';
 import AdminNavbar from '../../components/admin/AdminNavbar';
+import { ErrorMessage } from '../../components/ui';
 
 const MenuManagementPage = () => {
   const {
@@ -8,6 +9,7 @@ const MenuManagementPage = () => {
     showModal,
     editingItem,
     loading,
+    error,
     formData,
     categories,
     handleChange,
@@ -32,6 +34,12 @@ const MenuManagementPage = () => {
             + Add New Item
           </button>
         </div>
+
+        {error && (
+          <div className="mb-6">
+            <ErrorMessage message={error} />
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center py-20">

@@ -2,10 +2,11 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useOrderConfirmation } from '../../hooks';
 import Navbar from '../../components/customer/Navbar';
+import { ErrorMessage } from '../../components/ui';
 
 const OrderConfirmationPage = () => {
   const { orderId } = useParams();
-  const { order, loading, getStatusColor } = useOrderConfirmation(orderId);
+  const { order, loading, error, getStatusColor } = useOrderConfirmation(orderId);
 
   if (loading) {
     return (
@@ -18,11 +19,16 @@ const OrderConfirmationPage = () => {
     );
   }
 
-  if (!order) {
+  if (error || !order) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
+          {error && (
+            <div className="mb-6 max-w-md mx-auto">
+              <ErrorMessage message={error} />
+            </div>
+          )}
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Order not found</h2>
           <Link to="/" className="text-orange-600 hover:text-orange-700">
             Return to Menu

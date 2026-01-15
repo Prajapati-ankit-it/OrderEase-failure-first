@@ -1,12 +1,14 @@
 import React from 'react';
 import { useOrdersManagement } from '../../hooks';
 import AdminNavbar from '../../components/admin/AdminNavbar';
+import { ErrorMessage } from '../../components/ui';
 
 const OrdersManagementPage = () => {
   const {
     orders,
     selectedStatus,
     loading,
+    error,
     selectedOrder,
     statuses,
     fetchOrders,
@@ -31,6 +33,12 @@ const OrdersManagementPage = () => {
             🔄 Refresh
           </button>
         </div>
+
+        {error && (
+          <div className="mb-6">
+            <ErrorMessage message={error} onRetry={fetchOrders} />
+          </div>
+        )}
 
         {/* Status Filter */}
         <div className="flex flex-wrap gap-3 mb-6">
