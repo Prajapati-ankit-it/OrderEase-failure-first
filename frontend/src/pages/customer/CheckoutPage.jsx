@@ -1,67 +1,20 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { ordersApi } from '../../services/api';
-import { clearCart } from '../../redux/slices/cartSlice';
+import React from 'react';
+import { useCheckout } from '../../hooks';
 import Navbar from '../../components/customer/Navbar';
 
 const CheckoutPage = () => {
-  const { items } = useSelector((state) => state.cart);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const {
+    formData,
+    loading,
+    error,
+    totalPrice,
+    items,
+    handleChange,
+    placeOrder,
+  } = useCheckout();
 
-  const [formData, setFormData] = useState({
-    customerName: '',
-    phone: '',
-    orderType: 'dine-in',
-    tableNumber: '',
-    deliveryAddress: '',
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const orderData = {
-        customerName: formData.customerName,
-        phone: formData.phone,
-        items: items.map((item) => ({
-          itemId: item._id,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        totalPrice,
-        orderType: formData.orderType,
-        tableNumber: formData.orderType === 'dine-in' ? formData.tableNumber : undefined,
-        deliveryAddress: formData.orderType === 'delivery' ? formData.deliveryAddress : undefined,
-      };
-
-      const data = await ordersApi.createOrder(orderData);
-      dispatch(clearCart());
-      navigate(`/order-confirmation/${data._id}`);
-    } catch (err) {
-      setError(err.message || 'Failed to place order');
-      setLoading(false);
-    }
-  };
-
+  // Render nothing while cart is empty (redirect happens in hook)
   if (items.length === 0) {
-    navigate('/cart');
     return null;
   }
 
@@ -84,7 +37,7 @@ const CheckoutPage = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={placeOrder}>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-gray-700 font-semibold mb-2">

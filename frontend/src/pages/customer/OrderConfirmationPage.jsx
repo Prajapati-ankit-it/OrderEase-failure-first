@@ -1,38 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ordersApi } from '../../services/api';
+import { useOrderConfirmation } from '../../hooks';
 import Navbar from '../../components/customer/Navbar';
+import { ErrorMessage } from '../../components/ui';
 
 const OrderConfirmationPage = () => {
   const { orderId } = useParams();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchOrder = useCallback(async () => {
-    try {
-      const data = await ordersApi.getOrderById(orderId);
-      setOrder(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching order:', error);
-      setLoading(false);
-    }
-  }, [orderId]);
-
-  useEffect(() => {
-    fetchOrder();
-  }, [fetchOrder]);
-
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      preparing: 'bg-blue-100 text-blue-800',
-      ready: 'bg-green-100 text-green-800',
-      delivered: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
+  const { order, loading, error, getStatusColor } = useOrderConfirmation(orderId);
 
   if (loading) {
     return (
@@ -45,11 +19,16 @@ const OrderConfirmationPage = () => {
     );
   }
 
-  if (!order) {
+  if (error || !order) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <div className="container mx-auto px-4 py-20 text-center">
+          {error && (
+            <div className="mb-6 max-w-md mx-auto">
+              <ErrorMessage message={error} />
+            </div>
+          )}
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Order not found</h2>
           <Link to="/" className="text-orange-600 hover:text-orange-700">
             Return to Menu

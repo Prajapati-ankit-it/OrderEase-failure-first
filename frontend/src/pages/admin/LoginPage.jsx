@@ -1,78 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { loginUser } from '../../redux/slices/authSlice';
+import React from 'react';
+import { useLogin } from '../../hooks';
 import { Input, Button, ErrorMessage } from '../../components/ui';
-import { isValidEmail, validateRequired } from '../../utils';
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-    // Clear field error on change
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    const emailError = validateRequired(formData.email, 'Email');
-    if (emailError) {
-      newErrors.email = emailError;
-    } else if (!isValidEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-
-    const passwordError = validateRequired(formData.password, 'Password');
-    if (passwordError) {
-      newErrors.password = passwordError;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setApiError('');
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const result = await dispatch(loginUser(formData)).unwrap();
-      
-      if (result.role !== 'admin') {
-        setApiError('Access denied. Admin credentials required.');
-        setLoading(false);
-        return;
-      }
-
-      navigate('/admin/dashboard');
-    } catch (err) {
-      setApiError(err || 'Login failed. Please check your credentials.');
-      setLoading(false);
-    }
-  };
+  const {
+    formData,
+    errors,
+    apiError,
+    loading,
+    handleChange,
+    handleSubmit,
+    navigateToMenu,
+  } = useLogin();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center px-4">
@@ -125,7 +64,7 @@ const LoginPage = () => {
 
         <div className="mt-6 text-center">
           <button
-            onClick={() => navigate('/')}
+            onClick={navigateToMenu}
             className="text-orange-600 hover:text-orange-700 font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500 rounded px-2 py-1"
             aria-label="Back to menu"
           >

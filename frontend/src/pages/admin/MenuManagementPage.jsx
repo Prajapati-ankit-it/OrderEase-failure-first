@@ -1,99 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { foodApi } from '../../services/api';
+import React from 'react';
+import { useMenuManagement } from '../../hooks';
 import AdminNavbar from '../../components/admin/AdminNavbar';
+import { ErrorMessage } from '../../components/ui';
 
 const MenuManagementPage = () => {
-  const [menuItems, setMenuItems] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    category: 'Starters',
-    description: '',
-    image: '',
-    isAvailable: true,
-  });
-
-  const categories = ['Starters', 'Main Course', 'Fast Food', 'Drinks', 'Desserts'];
-
-  useEffect(() => {
-    fetchMenuItems();
-  }, []);
-
-  const fetchMenuItems = async () => {
-    try {
-      const data = await foodApi.getAllFoodItems();
-      setMenuItems(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching menu:', error);
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({
-      ...formData,
-      [e.target.name]: value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingItem) {
-        await foodApi.updateFoodItem(editingItem._id, formData);
-      } else {
-        await foodApi.createFoodItem(formData);
-      }
-      fetchMenuItems();
-      handleCloseModal();
-    } catch (error) {
-      console.error('Error saving menu item:', error);
-      alert(error.message || 'Failed to save menu item');
-    }
-  };
-
-  const handleEdit = (item) => {
-    setEditingItem(item);
-    setFormData({
-      name: item.name,
-      price: item.price,
-      category: item.category,
-      description: item.description || '',
-      image: item.image || '',
-      isAvailable: item.isAvailable,
-    });
-    setShowModal(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this item?')) {
-      try {
-        await foodApi.deleteFoodItem(id);
-        fetchMenuItems();
-      } catch (error) {
-        console.error('Error deleting menu item:', error);
-        alert('Failed to delete menu item');
-      }
-    }
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingItem(null);
-    setFormData({
-      name: '',
-      price: '',
-      category: 'Starters',
-      description: '',
-      image: '',
-      isAvailable: true,
-    });
-  };
+  const {
+    menuItems,
+    showModal,
+    editingItem,
+    loading,
+    error,
+    formData,
+    categories,
+    handleChange,
+    handleSubmit,
+    handleEdit,
+    handleDelete,
+    handleCloseModal,
+    openAddModal,
+  } = useMenuManagement();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -103,12 +28,18 @@ const MenuManagementPage = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Menu Management</h1>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openAddModal}
             className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition"
           >
             + Add New Item
           </button>
         </div>
+
+        {error && (
+          <div className="mb-6">
+            <ErrorMessage message={error} />
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center py-20">

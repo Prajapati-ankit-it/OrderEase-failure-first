@@ -1,57 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { ordersApi } from '../../services/api';
+import React from 'react';
+import { useOrdersManagement } from '../../hooks';
 import AdminNavbar from '../../components/admin/AdminNavbar';
+import { ErrorMessage } from '../../components/ui';
 
 const OrdersManagementPage = () => {
-  const [orders, setOrders] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState('All');
-  const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-
-  const statuses = ['All', 'pending', 'preparing', 'ready', 'delivered'];
-
-  useEffect(() => {
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      const data = await ordersApi.getAllOrders();
-      setOrders(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      setLoading(false);
-    }
-  };
-
-  const handleStatusUpdate = async (orderId, newStatus) => {
-    try {
-      await ordersApi.updateOrderStatus(orderId, newStatus);
-      fetchOrders();
-      setSelectedOrder(null);
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      alert('Failed to update order status');
-    }
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      preparing: 'bg-blue-100 text-blue-800',
-      ready: 'bg-green-100 text-green-800',
-      delivered: 'bg-green-600 text-white',
-      cancelled: 'bg-red-100 text-red-800',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const filteredOrders = selectedStatus === 'All'
-    ? orders
-    : orders.filter(order => order.status === selectedStatus);
+  const {
+    orders,
+    selectedStatus,
+    loading,
+    error,
+    selectedOrder,
+    statuses,
+    fetchOrders,
+    handleStatusUpdate,
+    getStatusColor,
+    handleStatusFilterChange,
+    handleOrderSelect,
+    handleCloseOrderDetails,
+  } = useOrdersManagement();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,12 +34,18 @@ const OrdersManagementPage = () => {
           </button>
         </div>
 
+        {error && (
+          <div className="mb-6">
+            <ErrorMessage message={error} onRetry={fetchOrders} />
+          </div>
+        )}
+
         {/* Status Filter */}
         <div className="flex flex-wrap gap-3 mb-6">
           {statuses.map((status) => (
             <button
               key={status}
-              onClick={() => setSelectedStatus(status)}
+              onClick={() => handleStatusFilterChange(status)}
               className={`px-6 py-2 rounded-full font-semibold transition capitalize ${
                 selectedStatus === status
                   ? 'bg-orange-600 text-white'
@@ -89,13 +61,13 @@ const OrdersManagementPage = () => {
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
           </div>
-        ) : filteredOrders.length === 0 ? (
+        ) : orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <p className="text-gray-600 text-lg">No orders found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {filteredOrders.map((order) => (
+            {orders.map((order) => (
               <div key={order._id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
@@ -164,7 +136,7 @@ const OrdersManagementPage = () => {
                       </button>
                     )}
                     <button
-                      onClick={() => setSelectedOrder(order)}
+                      onClick={() => handleOrderSelect(order)}
                       className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm"
                     >
                       Details
@@ -238,7 +210,7 @@ const OrdersManagementPage = () => {
               </div>
 
               <button
-                onClick={() => setSelectedOrder(null)}
+                onClick={handleCloseOrderDetails}
                 className="w-full mt-6 bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition"
               >
                 Close

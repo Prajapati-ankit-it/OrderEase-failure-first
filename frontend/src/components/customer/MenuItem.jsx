@@ -1,13 +1,8 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '../../redux/slices/cartSlice';
+import { useAddToCart } from '../../hooks';
 
 const MenuItem = ({ item }) => {
-  const dispatch = useDispatch();
-
-  const handleAddToCart = () => {
-    dispatch(addToCart(item));
-  };
+  const { handleAddToCart } = useAddToCart(item);
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">

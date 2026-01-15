@@ -1,55 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { ordersApi } from '../../services/api';
+import { useDashboard } from '../../hooks';
 import AdminNavbar from '../../components/admin/AdminNavbar';
+import { ErrorMessage } from '../../components/ui';
 
 const DashboardPage = () => {
-  const [stats, setStats] = useState({
-    totalOrders: 0,
-    pendingOrders: 0,
-    completedOrders: 0,
-    totalRevenue: 0,
-  });
-  const [recentOrders, setRecentOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const data = await ordersApi.getAllOrders();
-      
-      const totalOrders = data.length;
-      const pendingOrders = data.filter(o => o.status === 'pending' || o.status === 'preparing').length;
-      const completedOrders = data.filter(o => o.status === 'delivered' || o.status === 'ready').length;
-      const totalRevenue = data.reduce((sum, order) => sum + order.totalPrice, 0);
-
-      setStats({
-        totalOrders,
-        pendingOrders,
-        completedOrders,
-        totalRevenue,
-      });
-
-      setRecentOrders(data.slice(0, 5));
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      setLoading(false);
-    }
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      preparing: 'bg-blue-100 text-blue-800',
-      ready: 'bg-green-100 text-green-800',
-      delivered: 'bg-green-100 text-green-800',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
+  const { stats, recentOrders, loading, error, getStatusColor } = useDashboard();
 
   if (loading) {
     return (
@@ -68,6 +24,12 @@ const DashboardPage = () => {
       
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+
+        {error && (
+          <div className="mb-6">
+            <ErrorMessage message={error} />
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

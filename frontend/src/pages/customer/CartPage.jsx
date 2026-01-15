@@ -1,31 +1,17 @@
 import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { removeFromCart, updateQuantity, clearCart } from '../../redux/slices/cartSlice';
+import { useCart } from '../../hooks';
 import Navbar from '../../components/customer/Navbar';
 
 const CartPage = () => {
-  const { items } = useSelector((state) => state.cart);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0);
-
-  const handleQuantityChange = (id, quantity) => {
-    if (quantity < 1) {
-      dispatch(removeFromCart(id));
-    } else {
-      dispatch(updateQuantity({ id, quantity }));
-    }
-  };
-
-  const handleRemoveItem = (id) => {
-    dispatch(removeFromCart(id));
-  };
-
-  const handleCheckout = () => {
-    navigate('/checkout');
-  };
+  const {
+    items,
+    totalPrice,
+    handleQuantityChange,
+    handleRemoveItem,
+    handleCheckout,
+    handleClearCart,
+    navigateToMenu,
+  } = useCart();
 
   if (items.length === 0) {
     return (
@@ -36,7 +22,7 @@ const CartPage = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-4">Your cart is empty</h2>
           <p className="text-gray-600 mb-8">Add some delicious items to get started!</p>
           <button
-            onClick={() => navigate('/')}
+            onClick={navigateToMenu}
             className="bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-700 transition"
           >
             Browse Menu
@@ -127,7 +113,7 @@ const CartPage = () => {
               </button>
 
               <button
-                onClick={() => dispatch(clearCart())}
+                onClick={handleClearCart}
                 className="w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition"
               >
                 Clear Cart

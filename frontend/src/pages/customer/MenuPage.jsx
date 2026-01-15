@@ -1,28 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchMenuItems } from '../../redux/slices/menuSlice';
+import React from 'react';
+import { useMenu } from '../../hooks';
 import MenuItem from '../../components/customer/MenuItem';
 import Navbar from '../../components/customer/Navbar';
 import { LoadingSpinner, ErrorMessage, EmptyState } from '../../components/ui';
 
 const MenuPage = () => {
-  const dispatch = useDispatch();
-  const { items: menuItems, loading, error } = useSelector((state) => state.menu);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-
-  const categories = ['All', 'Starters', 'Main Course', 'Fast Food', 'Drinks', 'Desserts'];
-
-  useEffect(() => {
-    dispatch(fetchMenuItems({ available: true }));
-  }, [dispatch]);
-
-  const handleRetry = () => {
-    dispatch(fetchMenuItems({ available: true }));
-  };
-
-  const filteredItems = selectedCategory === 'All'
-    ? menuItems
-    : menuItems.filter(item => item.category === selectedCategory);
+  const {
+    menuItems,
+    loading,
+    error,
+    selectedCategory,
+    categories,
+    handleRetry,
+    handleCategoryChange,
+  } = useMenu();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -46,7 +37,7 @@ const MenuPage = () => {
           {categories.map((category) => (
             <button
               key={category}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => handleCategoryChange(category)}
               className={`px-6 py-2 rounded-full font-semibold transition ${
                 selectedCategory === category
                   ? 'bg-orange-600 text-white'
@@ -63,16 +54,16 @@ const MenuPage = () => {
         {/* Menu Items Grid */}
         {loading ? (
           <LoadingSpinner size="xl" className="py-20" />
-        ) : filteredItems.length === 0 ? (
+        ) : menuItems.length === 0 ? (
           <EmptyState
             title="No items found"
             description={`No menu items available${selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}`}
-            action={() => setSelectedCategory('All')}
+            action={() => handleCategoryChange('All')}
             actionLabel="View All Items"
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredItems.map((item) => (
+            {menuItems.map((item) => (
               <MenuItem key={item._id} item={item} />
             ))}
           </div>

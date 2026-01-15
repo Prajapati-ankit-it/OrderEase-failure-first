@@ -106,3 +106,19 @@ export const toTitleCase = (text) => {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
+
+/**
+ * Get Tailwind CSS classes for order status badge
+ * @param {string} status - Order status
+ * @returns {string} Tailwind CSS classes for status badge
+ */
+export const getOrderStatusColor = (status) => {
+  const colors = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    preparing: 'bg-blue-100 text-blue-800',
+    ready: 'bg-green-100 text-green-800',
+    delivered: 'bg-green-600 text-white',
+    cancelled: 'bg-red-100 text-red-800',
+  };
+  return colors[status] || 'bg-gray-100 text-gray-800';
+};
