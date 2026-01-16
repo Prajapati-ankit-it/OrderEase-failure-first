@@ -26,9 +26,11 @@ const useMenu = () => {
   }, []);
 
   const filteredItems = useMemo(() => {
+    // Ensure menuItems is always an array
+    const items = Array.isArray(menuItems) ? menuItems : [];
     return selectedCategory === 'All'
-      ? menuItems
-      : menuItems.filter(item => item.category === selectedCategory);
+      ? items
+      : items.filter(item => item.category === selectedCategory);
   }, [menuItems, selectedCategory]);
 
   return {

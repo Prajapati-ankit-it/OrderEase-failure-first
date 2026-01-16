@@ -26,7 +26,8 @@ const useMenuManagement = () => {
     try {
       const data = await foodApi.getAllFoodItems();
       if (!isMounted.current) return;
-      setMenuItems(data);
+      // Ensure data is always an array
+      setMenuItems(Array.isArray(data) ? data : []);
       setLoading(false);
       setError('');
     } catch (error) {

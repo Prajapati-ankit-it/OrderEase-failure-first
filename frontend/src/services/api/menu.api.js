@@ -15,7 +15,7 @@ const menuApi = {
    */
   getMenuItems: async (params = {}) => {
     const response = await httpClient.get(API_ENDPOINTS.MENU.LIST, { params });
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -25,7 +25,7 @@ const menuApi = {
    */
   getMenuItemById: async (id) => {
     const response = await httpClient.get(API_ENDPOINTS.MENU.BY_ID(id));
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -37,7 +37,7 @@ const menuApi = {
     const response = await httpClient.get(API_ENDPOINTS.MENU.LIST, {
       params: { category },
     });
-    return response.data;
+    return response.data.data || response.data;
   },
 };
 

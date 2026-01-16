@@ -74,17 +74,23 @@ const authApi = {
    */
   refreshToken: async (refreshToken) => {
     const response = await httpClient.post(API_ENDPOINTS.AUTH.REFRESH, { refreshToken });
+    const data = response.data.data || response.data;
     
+    if (data.accessToken) {
+      TokenManager.setToken(data.accessToken);
     // Backend returns: { success, message, data: { user, accessToken, refreshToken } }
     const { data: responseData } = response.data;
     
     if (responseData.accessToken) {
       TokenManager.setToken(responseData.accessToken);
     }
+    if (data.refreshToken) {
+      TokenManager.setRefreshToken(data.refreshToken);
     if (responseData.refreshToken) {
       TokenManager.setRefreshToken(responseData.refreshToken);
     }
     
+    return data;
     return responseData;
   },
 

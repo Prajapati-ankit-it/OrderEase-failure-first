@@ -21,7 +21,7 @@ const ordersApi = {
    */
   createOrder: async (orderData) => {
     const response = await httpClient.post(API_ENDPOINTS.ORDERS.CREATE, orderData);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -32,7 +32,7 @@ const ordersApi = {
    */
   createOrderFromCart: async (orderData) => {
     const response = await httpClient.post(API_ENDPOINTS.ORDERS.CREATE_FROM_CART, orderData);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -44,7 +44,7 @@ const ordersApi = {
    */
   getAllOrders: async (params = {}) => {
     const response = await httpClient.get(API_ENDPOINTS.ORDERS.LIST, { params });
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -54,7 +54,7 @@ const ordersApi = {
    */
   getOrderById: async (id) => {
     const response = await httpClient.get(API_ENDPOINTS.ORDERS.BY_ID(id));
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -65,7 +65,7 @@ const ordersApi = {
    */
   updateOrderStatus: async (id, status) => {
     const response = await httpClient.put(API_ENDPOINTS.ORDERS.UPDATE_STATUS(id), { status });
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -84,7 +84,7 @@ const ordersApi = {
    */
   getOrderStats: async () => {
     const response = await httpClient.get(`${API_ENDPOINTS.ORDERS.LIST}/stats`);
-    return response.data;
+    return response.data.data || response.data;
   },
 };
 
