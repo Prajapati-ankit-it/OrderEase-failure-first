@@ -76,7 +76,8 @@ const useOrdersManagement = () => {
     }, 30000);
     
     return () => clearInterval(interval);
-  // fetchOrders is stable (empty deps) so we exclude it to avoid false warnings
+  // fetchOrders is stable (defined with useCallback and empty deps array)
+  // so it's safe to exclude from dependencies to avoid false warnings
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.page, selectedStatus]);
 
@@ -98,15 +99,14 @@ const useOrdersManagement = () => {
       const currentStatus = selectedStatus === 'All' ? null : selectedStatus;
       fetchOrders(pagination.page, currentStatus);
     }
-  // fetchOrders is stable (empty deps) so we exclude it to avoid false warnings
+  // fetchOrders is stable - see comment above useEffect
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStatus, pagination.page]);
 
   const handleStatusFilterChange = useCallback((status) => {
-    // Note: This triggers two state updates which may cause two renders.
-    // This is acceptable React behavior and both updates will be batched
-    // in React 18+ for most cases. The alternative would be useReducer
-    // for a single atomic state update, but adds complexity.
+    // Note: This triggers two state updates. In React 18+, these are automatically
+    // batched to prevent multiple renders. The alternative (useReducer) would require
+    // more boilerplate for minimal benefit in this case.
     setSelectedStatus(status);
     setPagination(prev => ({ ...prev, page: 1 })); // Reset to page 1 when filtering
   }, []);
