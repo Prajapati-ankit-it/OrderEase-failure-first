@@ -154,8 +154,16 @@ httpClient.interceptors.response.use(
           TokenManager.setRefreshToken(responseData.refreshToken);
         }
 
-        // Dispatch event to reload user profile
-        window.dispatchEvent(new CustomEvent('auth:tokenRefreshed'));
+        // Dispatch event to notify that the auth token was refreshed
+        // Listeners should check isAuthenticated state rather than rely on event data
+        window.dispatchEvent(
+          new CustomEvent('auth:tokenRefreshed', {
+            detail: {
+              success: true,
+              refreshedAt: Date.now(),
+            },
+          })
+        );
 
         // Update the failed requests with new token
         processQueue(null, newAccessToken);

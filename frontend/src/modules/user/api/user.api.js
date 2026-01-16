@@ -4,6 +4,7 @@
  */
 
 import httpClient from '../../../services/api/httpClient';
+import { API_ENDPOINTS } from '../../../config/api.config';
 
 const userApi = {
   /**
@@ -11,7 +12,7 @@ const userApi = {
    * @returns {Promise} User profile data
    */
   getProfile: async () => {
-    const response = await httpClient.get('/user/profile');
+    const response = await httpClient.get(API_ENDPOINTS.USER.PROFILE);
     // Backend returns: { success, message, data: user }
     return response.data.data;
   },
@@ -24,7 +25,7 @@ const userApi = {
    * @returns {Promise} Updated user profile data
    */
   updateProfile: async (profileData) => {
-    const response = await httpClient.put('/user/profile', profileData);
+    const response = await httpClient.put(API_ENDPOINTS.USER.PROFILE, profileData);
     // Backend returns: { success, message, data: user }
     return response.data.data;
   },
@@ -37,7 +38,7 @@ const userApi = {
    * @returns {Promise} Success message
    */
   updatePassword: async (passwordData) => {
-    const response = await httpClient.put('/user/password', passwordData);
+    const response = await httpClient.put(API_ENDPOINTS.USER.UPDATE_PASSWORD, passwordData);
     // Backend returns: { success, message }
     return response.data;
   },
@@ -49,7 +50,7 @@ const userApi = {
    * @returns {Promise} User's orders with pagination
    */
   getUserOrders: async (page = 1, limit = 10) => {
-    const response = await httpClient.get('/user/orders', {
+    const response = await httpClient.get(API_ENDPOINTS.USER.ORDERS, {
       params: { page, limit },
     });
     // Backend returns: { success, message, data: { orders, pagination } }

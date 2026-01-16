@@ -61,7 +61,8 @@ const authApi = {
   refreshToken: async (refreshToken) => {
     const response = await httpClient.post(API_ENDPOINTS.AUTH.REFRESH, { refreshToken });
     // Backend returns: { success, message, data: { user, accessToken, refreshToken } }
-    // Token storage is handled by httpClient interceptor
+    // Token storage is handled automatically by httpClient response interceptor
+    // which detects /auth/refresh URL and stores tokens from response.data.data
     const { data: responseData } = response.data;
     
     return responseData;

@@ -3,74 +3,69 @@
  * Custom hook for user profile operations
  */
 
+import { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserProfile } from '../../../redux/slices/authSlice';
 import { userApi } from '../api';
-import { useState } from 'react';
 
 const useUserProfile = () => {
   const dispatch = useDispatch();
   const { user, loading, error } = useSelector((state) => state.auth);
-  const [updating, setUpdating] = useState(false);
-  const [updateError, setUpdateError] = useState(null);
 
   /**
    * Refresh user profile from backend
    */
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     try {
       await dispatch(fetchUserProfile()).unwrap();
-      return true;
+      return { success: true };
     } catch (err) {
       console.error('Failed to refresh profile:', err);
-      return false;
+      return { success: false, error: err.message || 'Failed to refresh profile' };
     }
-  };
+  }, [dispatch]);
 
   /**
    * Update user profile
    * @param {Object} profileData - Profile data to update
    */
-  const updateProfile = async (profileData) => {
+  const updateProfile = useCallback(async (profileData) => {
     try {
-      setUpdating(true);
-      setUpdateError(null);
-      const updatedUser = await userApi.updateProfile(profileData);
+      await userApi.updateProfile(profileData);
       // Refresh profile to sync with backend
-      await refreshProfile();
-      return { success: true, user: updatedUser };
+      const refreshResult = await refreshProfile();
+      if (!refreshResult.success) {
+        // Update succeeded but refresh failed - still return success with warning
+        return { 
+          success: true, 
+          warning: 'Profile updated but failed to refresh. Please reload the page.' 
+        };
+      }
+      return { success: true };
     } catch (err) {
       const errorMessage = err.message || 'Failed to update profile';
-      setUpdateError(errorMessage);
       return { success: false, error: errorMessage };
-    } finally {
-      setUpdating(false);
     }
-  };
+  }, [refreshProfile]);
 
   /**
    * Update user password
    * @param {Object} passwordData - Password data
    */
-  const updatePassword = async (passwordData) => {
+  const updatePassword = useCallback(async (passwordData) => {
     try {
-      setUpdating(true);
-      setUpdateError(null);
       await userApi.updatePassword(passwordData);
       return { success: true };
     } catch (err) {
       const errorMessage = err.message || 'Failed to update password';
-      setUpdateError(errorMessage);
       return { success: false, error: errorMessage };
-    } finally {
-      setUpdating(false);
     }
-  };
+  }, []);
 
   return {
     user,
-    loading: loading || updating,
-    error: error || updateError,
+    loading,
+    error,
     refreshProfile,
     updateProfile,
     updatePassword,

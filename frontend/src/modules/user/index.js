@@ -3,6 +3,6 @@
  * Exports all user module functionality
  */
 
-export * from './api';
-export * from './constants';
-export * from './hooks';
+export { userApi } from './api';
+export { UserRole, isAdmin, isUser, hasValidRole } from './constants';
+export { useUserProfile } from './hooks';

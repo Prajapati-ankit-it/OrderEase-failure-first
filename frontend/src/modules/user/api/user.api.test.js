@@ -5,6 +5,8 @@
 
 import userApi from './user.api';
 import httpClient from '../../../services/api/httpClient';
+import { API_ENDPOINTS } from '../../../config/api.config';
+import { UserRole } from '../constants/userRoles';
 
 // Mock httpClient
 jest.mock('../../../services/api/httpClient', () => ({
@@ -30,7 +32,7 @@ describe('User API', () => {
             id: '123',
             email: 'user@test.com',
             name: 'Test User',
-            role: 'USER',
+            role: UserRole.USER,
             createdAt: '2024-01-01T00:00:00Z',
             updatedAt: '2024-01-01T00:00:00Z',
           },
@@ -41,7 +43,7 @@ describe('User API', () => {
 
       const result = await userApi.getProfile();
 
-      expect(httpClient.get).toHaveBeenCalledWith('/user/profile');
+      expect(httpClient.get).toHaveBeenCalledWith(API_ENDPOINTS.USER.PROFILE);
       expect(result).toEqual(mockResponse.data.data);
     });
 
@@ -72,7 +74,7 @@ describe('User API', () => {
             id: '123',
             email: 'updated@test.com',
             name: 'Updated Name',
-            role: 'USER',
+            role: UserRole.USER,
           },
         },
       };
@@ -81,7 +83,7 @@ describe('User API', () => {
 
       const result = await userApi.updateProfile(profileData);
 
-      expect(httpClient.put).toHaveBeenCalledWith('/user/profile', profileData);
+      expect(httpClient.put).toHaveBeenCalledWith(API_ENDPOINTS.USER.PROFILE, profileData);
       expect(result).toEqual(mockResponse.data.data);
     });
   });
@@ -104,7 +106,7 @@ describe('User API', () => {
 
       const result = await userApi.updatePassword(passwordData);
 
-      expect(httpClient.put).toHaveBeenCalledWith('/user/password', passwordData);
+      expect(httpClient.put).toHaveBeenCalledWith(API_ENDPOINTS.USER.UPDATE_PASSWORD, passwordData);
       expect(result).toEqual(mockResponse.data);
     });
   });
@@ -134,7 +136,7 @@ describe('User API', () => {
 
       const result = await userApi.getUserOrders();
 
-      expect(httpClient.get).toHaveBeenCalledWith('/user/orders', {
+      expect(httpClient.get).toHaveBeenCalledWith(API_ENDPOINTS.USER.ORDERS, {
         params: { page: 1, limit: 10 },
       });
       expect(result).toEqual(mockResponse.data.data);
@@ -161,7 +163,7 @@ describe('User API', () => {
 
       const result = await userApi.getUserOrders(2, 5);
 
-      expect(httpClient.get).toHaveBeenCalledWith('/user/orders', {
+      expect(httpClient.get).toHaveBeenCalledWith(API_ENDPOINTS.USER.ORDERS, {
         params: { page: 2, limit: 5 },
       });
       expect(result).toEqual(mockResponse.data.data);
