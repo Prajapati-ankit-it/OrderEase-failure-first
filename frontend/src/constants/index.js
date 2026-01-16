@@ -10,8 +10,9 @@ export const MENU_CATEGORIES = ['All', 'Starters', 'Main Course', 'Fast Food', '
 
 /**
  * Order statuses for filtering
+ * Backend uses UPPERCASE, frontend displays as lowercase
  */
-export const ORDER_STATUSES = ['All', 'pending', 'preparing', 'ready', 'delivered'];
+export const ORDER_STATUSES = ['All', 'PENDING', 'PREPARING', 'READY', 'DELIVERED'];
 
 /**
  * Initial form data for menu management

@@ -6,6 +6,7 @@ import { ErrorMessage } from '../../components/ui';
 const OrdersManagementPage = () => {
   const {
     orders,
+    pagination,
     selectedStatus,
     loading,
     error,
@@ -15,6 +16,7 @@ const OrdersManagementPage = () => {
     handleStatusUpdate,
     getStatusColor,
     handleStatusFilterChange,
+    handlePageChange,
     handleOrderSelect,
     handleCloseOrderDetails,
   } = useOrdersManagement();
@@ -46,13 +48,14 @@ const OrdersManagementPage = () => {
             <button
               key={status}
               onClick={() => handleStatusFilterChange(status)}
-              className={`px-6 py-2 rounded-full font-semibold transition capitalize ${
+              className={`px-6 py-2 rounded-full font-semibold transition ${
                 selectedStatus === status
                   ? 'bg-orange-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-orange-100'
               }`}
             >
-              {status}
+              {status === 'All' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase()}
+            </button>
             </button>
           ))}
         </div>
@@ -78,7 +81,7 @@ const OrdersManagementPage = () => {
                       </p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
-                      {order.status}
+                      {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
                     </span>
                   </div>
 
@@ -111,25 +114,25 @@ const OrdersManagementPage = () => {
                   </div>
 
                   <div className="flex gap-2">
-                    {order.status === 'pending' && (
+                    {order.status === 'PENDING' && (
                       <button
-                        onClick={() => handleStatusUpdate(order._id, 'preparing')}
+                        onClick={() => handleStatusUpdate(order._id, 'PREPARING')}
                         className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition text-sm"
                       >
                         Start Preparing
                       </button>
                     )}
-                    {order.status === 'preparing' && (
+                    {order.status === 'PREPARING' && (
                       <button
-                        onClick={() => handleStatusUpdate(order._id, 'ready')}
+                        onClick={() => handleStatusUpdate(order._id, 'READY')}
                         className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition text-sm"
                       >
                         Mark Ready
                       </button>
                     )}
-                    {order.status === 'ready' && (
+                    {order.status === 'READY' && (
                       <button
-                        onClick={() => handleStatusUpdate(order._id, 'delivered')}
+                        onClick={() => handleStatusUpdate(order._id, 'DELIVERED')}
                         className="flex-1 bg-green-700 text-white py-2 rounded-lg hover:bg-green-800 transition text-sm"
                       >
                         Mark Delivered
@@ -145,6 +148,44 @@ const OrdersManagementPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {!loading && pagination && pagination.totalPages > 1 && (
+          <div className="mt-8 flex justify-center items-center gap-4">
+            <button
+              onClick={() => handlePageChange(pagination.page - 1)}
+              disabled={pagination.page === 1}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                pagination.page === 1
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-orange-600 text-white hover:bg-orange-700'
+              }`}
+            >
+              Previous
+            </button>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700">
+                Page {pagination.page} of {pagination.totalPages}
+              </span>
+              <span className="text-gray-500 text-sm">
+                ({pagination.total} total orders)
+              </span>
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(pagination.page + 1)}
+              disabled={pagination.page >= pagination.totalPages}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                pagination.page >= pagination.totalPages
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-orange-600 text-white hover:bg-orange-700'
+              }`}
+            >
+              Next
+            </button>
           </div>
         )}
 
@@ -183,7 +224,7 @@ const OrdersManagementPage = () => {
                 <div>
                   <p className="text-sm text-gray-600">Status</p>
                   <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(selectedOrder.status)}`}>
-                    {selectedOrder.status}
+                    {selectedOrder.status.charAt(0) + selectedOrder.status.slice(1).toLowerCase()}
                   </span>
                 </div>
                 <div>

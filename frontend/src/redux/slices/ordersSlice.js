@@ -75,6 +75,12 @@ const initialState = {
   loading: false,
   error: null,
   lastFetched: null,
+  pagination: {
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+  },
 };
 
 // Slice
@@ -112,7 +118,21 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchAllOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload;
+        // Handle paginated response
+        if (action.payload && typeof action.payload === 'object') {
+          if (action.payload.orders && action.payload.pagination) {
+            // Backend returns { orders: [], pagination: {} }
+            state.orders = action.payload.orders;
+            state.pagination = action.payload.pagination;
+          } else if (Array.isArray(action.payload)) {
+            // Fallback: backend returns array directly
+            state.orders = action.payload;
+          } else {
+            state.orders = [];
+          }
+        } else {
+          state.orders = [];
+        }
         state.lastFetched = new Date().toISOString();
       })
       .addCase(fetchAllOrders.rejected, (state, action) => {

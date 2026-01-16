@@ -36,11 +36,12 @@ const ordersApi = {
   },
 
   /**
-   * Get all orders
+   * Get all orders with pagination
    * @param {Object} params - Query parameters
-   * @param {string} params.status - Filter by status
-   * @param {string} params.orderType - Filter by order type
-   * @returns {Promise} Array of orders
+   * @param {number} params.page - Page number (default: 1)
+   * @param {number} params.limit - Items per page (default: 10)
+   * @param {string} params.status - Filter by status (optional)
+   * @returns {Promise} Object with orders array and pagination metadata
    */
   getAllOrders: async (params = {}) => {
     const response = await httpClient.get(API_ENDPOINTS.ORDERS.LIST, { params });

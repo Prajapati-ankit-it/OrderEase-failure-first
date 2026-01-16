@@ -1,6 +1,6 @@
 /**
  * useOrdersManagement Hook
- * Custom hook for orders management with polling
+ * Custom hook for orders management with pagination and polling
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -10,6 +10,12 @@ import { getOrderStatusColor } from '../utils';
 
 const useOrdersManagement = () => {
   const [orders, setOrders] = useState([]);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0,
+  });
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,11 +28,32 @@ const useOrdersManagement = () => {
     };
   }, []);
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = useCallback(async (page = 1, status = null) => {
     try {
-      const data = await ordersApi.getAllOrders();
+      setLoading(true);
+      const params = { page, limit: pagination.limit };
+      
+      // Only add status filter if it's not 'All'
+      if (status && status !== 'All') {
+        params.status = status;
+      }
+      
+      const data = await ordersApi.getAllOrders(params);
+      
       if (!isMounted.current) return;
-      setOrders(data);
+      
+      // Handle paginated response
+      if (data && data.orders && data.pagination) {
+        setOrders(data.orders);
+        setPagination(data.pagination);
+      } else if (Array.isArray(data)) {
+        // Fallback for non-paginated response
+        setOrders(data);
+        setPagination(prev => ({ ...prev, total: data.length, totalPages: 1 }));
+      } else {
+        setOrders([]);
+      }
+      
       setLoading(false);
       setError('');
     } catch (error) {
@@ -35,13 +62,19 @@ const useOrdersManagement = () => {
       setLoading(false);
       setError(error.message || 'Failed to load orders');
     }
-  }, []);
+  }, [pagination.limit]);
 
   useEffect(() => {
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 30000); // Refresh every 30 seconds
+    const currentStatus = selectedStatus === 'All' ? null : selectedStatus;
+    fetchOrders(pagination.page, currentStatus);
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(() => {
+      fetchOrders(pagination.page, currentStatus);
+    }, 30000);
+    
     return () => clearInterval(interval);
-  }, [fetchOrders]);
+  }, [pagination.page, selectedStatus, fetchOrders]);
 
   const handleStatusUpdate = useCallback(async (orderId, newStatus) => {
     setError('');
@@ -58,12 +91,18 @@ const useOrdersManagement = () => {
       console.error('Error updating order status:', error);
       setError(error.message || 'Failed to update order status');
       // Refresh to get accurate state
-      fetchOrders();
+      const currentStatus = selectedStatus === 'All' ? null : selectedStatus;
+      fetchOrders(pagination.page, currentStatus);
     }
-  }, [fetchOrders]);
+  }, [selectedStatus, pagination.page, fetchOrders]);
 
   const handleStatusFilterChange = useCallback((status) => {
     setSelectedStatus(status);
+    setPagination(prev => ({ ...prev, page: 1 })); // Reset to page 1 when filtering
+  }, []);
+
+  const handlePageChange = useCallback((newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
   }, []);
 
   const handleOrderSelect = useCallback((order) => {
@@ -74,16 +113,9 @@ const useOrdersManagement = () => {
     setSelectedOrder(null);
   }, []);
 
-  const filteredOrders = useMemo(() => {
-    // Ensure orders is always an array
-    const ordersArray = Array.isArray(orders) ? orders : [];
-    return selectedStatus === 'All'
-      ? ordersArray
-      : ordersArray.filter(order => order.status === selectedStatus);
-  }, [orders, selectedStatus]);
-
   return {
-    orders: filteredOrders,
+    orders: Array.isArray(orders) ? orders : [],
+    pagination,
     selectedStatus,
     loading,
     error,
@@ -93,6 +125,7 @@ const useOrdersManagement = () => {
     handleStatusUpdate,
     getStatusColor: getOrderStatusColor,
     handleStatusFilterChange,
+    handlePageChange,
     handleOrderSelect,
     handleCloseOrderDetails,
   };
