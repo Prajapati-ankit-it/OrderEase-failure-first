@@ -58,7 +58,7 @@ export const logoutUser = createAsyncThunk(
 
 // Initial state
 const initialState = {
-  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null,
+  user: undefined, // undefined = not loaded yet, null = no user
   token: localStorage.getItem('token') || null,
   isAuthenticated: !!localStorage.getItem('token'),
   loading: false,

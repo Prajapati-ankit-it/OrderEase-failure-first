@@ -48,7 +48,7 @@ const authApi = {
    * @returns {Promise} User profile data
    */
   getProfile: async () => {
-    const response = await httpClient.get(API_ENDPOINTS.AUTH.PROFILE);
+    const response = await httpClient.get(API_ENDPOINTS.USER.PROFILE);
     // Backend returns: { success, message, data: user }
     return response.data.data;
   },
@@ -60,15 +60,11 @@ const authApi = {
    */
   refreshToken: async (refreshToken) => {
     const response = await httpClient.post(API_ENDPOINTS.AUTH.REFRESH, { refreshToken });
-    const data = response.data.data || response.data;
-    
-    if (data.accessToken) {
-      TokenManager.setToken(data.accessToken);
     // Backend returns: { success, message, data: { user, accessToken, refreshToken } }
-    // Token storage handled by httpClient interceptor
+    // Token storage is handled automatically by httpClient response interceptor
+    // which detects /auth/refresh URL and stores tokens from response.data.data
     const { data: responseData } = response.data;
     
-    return data;
     return responseData;
   },
 

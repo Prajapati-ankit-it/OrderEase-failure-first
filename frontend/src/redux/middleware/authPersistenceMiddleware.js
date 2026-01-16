@@ -2,6 +2,7 @@
  * Auth Persistence Middleware
  * Handles localStorage synchronization for authentication state
  * Separates side effects from reducers following Redux best practices
+ * Note: User data is NOT persisted to localStorage - it's always loaded from backend
  */
 
 const authPersistenceMiddleware = (store) => (next) => (action) => {
@@ -13,10 +14,8 @@ const authPersistenceMiddleware = (store) => (next) => (action) => {
     case 'auth/setCredentials':
     case 'auth/loginUser/fulfilled':
     case 'auth/registerUser/fulfilled':
-      // Persist user and token to localStorage
-      if (state.auth.user) {
-        localStorage.setItem('user', JSON.stringify(state.auth.user));
-      }
+      // Persist only token to localStorage
+      // User data will be fetched from backend on next load
       if (state.auth.token) {
         localStorage.setItem('token', state.auth.token);
       }
@@ -29,13 +28,6 @@ const authPersistenceMiddleware = (store) => (next) => (action) => {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
-      break;
-
-    case 'auth/fetchProfile/fulfilled':
-      // Update user data in localStorage
-      if (state.auth.user) {
-        localStorage.setItem('user', JSON.stringify(state.auth.user));
-      }
       break;
 
     default:

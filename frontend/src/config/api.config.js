@@ -27,9 +27,14 @@ export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/auth/login',
     REGISTER: '/auth/signup', // Backend uses /auth/signup
-    PROFILE: '/auth/profile',
     REFRESH: '/auth/refresh',
     LOGOUT: '/auth/logout',
+  },
+  // User endpoints
+  USER: {
+    PROFILE: '/user/profile',
+    UPDATE_PASSWORD: '/user/password',
+    ORDERS: '/user/orders',
   },
   // Public Menu endpoints (for customers)
   MENU: {

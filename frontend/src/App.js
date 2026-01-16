@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from './redux/slices/authSlice';
 import { ErrorBoundary, LoadingSpinner } from './components/ui';
+import { UserRole } from './modules/user/constants';
+import ProfileLoader from './components/ProfileLoader';
 
 // Lazy load pages for code splitting
 const MenuPage = lazy(() => import('./pages/customer/MenuPage'));
@@ -46,7 +48,7 @@ const AuthListener = () => {
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated || user?.role !== UserRole.ADMIN) {
     return <Navigate to="/admin/login" replace />;
   }
   
@@ -58,6 +60,7 @@ function App() {
     <ErrorBoundary>
       <Router>
         <AuthListener />
+        <ProfileLoader />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Customer Routes */}
