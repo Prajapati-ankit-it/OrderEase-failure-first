@@ -3,7 +3,7 @@
  * Custom hook for adding menu items to cart
  */
 
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../redux/slices/cartSlice';
 
@@ -16,11 +16,9 @@ import { addToCart } from '../redux/slices/cartSlice';
 const useAddToCart = (item) => {
   const dispatch = useDispatch();
   const itemRef = useRef(item);
-
-  // Keep the ref updated with the latest item
-  useEffect(() => {
-    itemRef.current = item;
-  }, [item]);
+  
+  // Update ref during render to always have latest item
+  itemRef.current = item;
 
   const handleAddToCart = useCallback(() => {
     const currentItem = itemRef.current;
