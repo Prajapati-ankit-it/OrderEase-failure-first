@@ -42,7 +42,7 @@ const OrdersManagementPage = () => {
 
         {/* Status Filter */}
         <div className="flex flex-wrap gap-3 mb-6">
-          {statuses.map((status) => (
+          {Array.isArray(statuses) && statuses.map((status) => (
             <button
               key={status}
               onClick={() => handleStatusFilterChange(status)}
@@ -61,14 +61,14 @@ const OrdersManagementPage = () => {
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
           </div>
-        ) : orders.length === 0 ? (
+        ) : !Array.isArray(orders) || orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <p className="text-gray-600 text-lg">No orders found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {orders.map((order) => (
-              <div key={order._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+            {Array.isArray(orders) && orders.map((order) => (
+              <div key={order._id || order.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -94,7 +94,7 @@ const OrdersManagementPage = () => {
                   <div className="border-t pt-4 mb-4">
                     <p className="font-semibold text-gray-800 mb-2">Items:</p>
                     <ul className="space-y-1">
-                      {order.items.map((item, index) => (
+                      {Array.isArray(order.items) && order.items.map((item, index) => (
                         <li key={index} className="text-sm text-gray-700 flex justify-between">
                           <span>{item.name} x {item.quantity}</span>
                           <span>₹{item.price * item.quantity}</span>
@@ -189,7 +189,7 @@ const OrdersManagementPage = () => {
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Items</p>
                   <ul className="space-y-2">
-                    {selectedOrder.items.map((item, index) => (
+                    {selectedOrder && Array.isArray(selectedOrder.items) && selectedOrder.items.map((item, index) => (
                       <li key={index} className="flex justify-between">
                         <span>{item.name} x {item.quantity}</span>
                         <span className="font-semibold">₹{item.price * item.quantity}</span>

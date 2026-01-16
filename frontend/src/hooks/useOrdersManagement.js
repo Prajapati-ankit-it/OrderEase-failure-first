@@ -75,9 +75,11 @@ const useOrdersManagement = () => {
   }, []);
 
   const filteredOrders = useMemo(() => {
+    // Ensure orders is always an array
+    const ordersArray = Array.isArray(orders) ? orders : [];
     return selectedStatus === 'All'
-      ? orders
-      : orders.filter(order => order.status === selectedStatus);
+      ? ordersArray
+      : ordersArray.filter(order => order.status === selectedStatus);
   }, [orders, selectedStatus]);
 
   return {

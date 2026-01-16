@@ -16,16 +16,17 @@ const authApi = {
    */
   login: async (credentials) => {
     const response = await httpClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
+    const data = response.data.data || response.data;
     
     // Store tokens if present
-    if (response.data.accessToken) {
-      TokenManager.setToken(response.data.accessToken);
+    if (data.accessToken) {
+      TokenManager.setToken(data.accessToken);
     }
-    if (response.data.refreshToken) {
-      TokenManager.setRefreshToken(response.data.refreshToken);
+    if (data.refreshToken) {
+      TokenManager.setRefreshToken(data.refreshToken);
     }
     
-    return response.data;
+    return data;
   },
 
   /**
@@ -39,16 +40,17 @@ const authApi = {
    */
   register: async (userData) => {
     const response = await httpClient.post(API_ENDPOINTS.AUTH.REGISTER, userData);
+    const data = response.data.data || response.data;
     
     // Store tokens if present
-    if (response.data.accessToken) {
-      TokenManager.setToken(response.data.accessToken);
+    if (data.accessToken) {
+      TokenManager.setToken(data.accessToken);
     }
-    if (response.data.refreshToken) {
-      TokenManager.setRefreshToken(response.data.refreshToken);
+    if (data.refreshToken) {
+      TokenManager.setRefreshToken(data.refreshToken);
     }
     
-    return response.data;
+    return data;
   },
 
   /**
@@ -57,7 +59,7 @@ const authApi = {
    */
   getProfile: async () => {
     const response = await httpClient.get(API_ENDPOINTS.AUTH.PROFILE);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -67,15 +69,16 @@ const authApi = {
    */
   refreshToken: async (refreshToken) => {
     const response = await httpClient.post(API_ENDPOINTS.AUTH.REFRESH, { refreshToken });
+    const data = response.data.data || response.data;
     
-    if (response.data.accessToken) {
-      TokenManager.setToken(response.data.accessToken);
+    if (data.accessToken) {
+      TokenManager.setToken(data.accessToken);
     }
-    if (response.data.refreshToken) {
-      TokenManager.setRefreshToken(response.data.refreshToken);
+    if (data.refreshToken) {
+      TokenManager.setRefreshToken(data.refreshToken);
     }
     
-    return response.data;
+    return data;
   },
 
   /**

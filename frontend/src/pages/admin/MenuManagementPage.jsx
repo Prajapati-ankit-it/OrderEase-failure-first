@@ -60,8 +60,8 @@ const MenuManagementPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {menuItems.map((item) => (
-                    <tr key={item._id} className="hover:bg-gray-50">
+                  {Array.isArray(menuItems) && menuItems.map((item) => (
+                    <tr key={item._id || item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
                       </td>

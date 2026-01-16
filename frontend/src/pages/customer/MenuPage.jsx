@@ -54,7 +54,7 @@ const MenuPage = () => {
         {/* Menu Items Grid */}
         {loading ? (
           <LoadingSpinner size="xl" className="py-20" />
-        ) : menuItems.length === 0 ? (
+        ) : !Array.isArray(menuItems) || menuItems.length === 0 ? (
           <EmptyState
             title="No items found"
             description={`No menu items available${selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}`}
@@ -64,7 +64,7 @@ const MenuPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {menuItems.map((item) => (
-              <MenuItem key={item._id} item={item} />
+              <MenuItem key={item._id || item.id} item={item} />
             ))}
           </div>
         )}

@@ -16,7 +16,7 @@ const foodApi = {
    */
   getAllFoodItems: async (params = {}) => {
     const response = await httpClient.get(API_ENDPOINTS.FOOD.LIST, { params });
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -26,7 +26,7 @@ const foodApi = {
    */
   getFoodItemById: async (id) => {
     const response = await httpClient.get(API_ENDPOINTS.FOOD.BY_ID(id));
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -42,7 +42,7 @@ const foodApi = {
    */
   createFoodItem: async (foodItemData) => {
     const response = await httpClient.post(API_ENDPOINTS.FOOD.CREATE, foodItemData);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -53,7 +53,7 @@ const foodApi = {
    */
   updateFoodItem: async (id, foodItemData) => {
     const response = await httpClient.put(API_ENDPOINTS.FOOD.UPDATE(id), foodItemData);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   /**
@@ -75,7 +75,7 @@ const foodApi = {
     const response = await httpClient.get(API_ENDPOINTS.FOOD.LIST, {
       params: { category },
     });
-    return response.data;
+    return response.data.data || response.data;
   },
 };
 
