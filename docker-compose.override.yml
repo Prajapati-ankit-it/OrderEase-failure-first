@@ -1,0 +1,35 @@
+# Docker Compose Override File
+# This file automatically overrides docker-compose.yml when present
+# Use for local development customizations without affecting production
+
+version: '3.8'
+
+services:
+  # Override backend service for development
+  backend:
+    build:
+      target: development  # Use development stage
+    environment:
+      NODE_ENV: development
+    volumes:
+      # Mount source code for hot-reload
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+      - ./backend/package.json:/app/package.json
+      - ./backend/tsconfig.json:/app/tsconfig.json
+    ports:
+      - "9229:9229"  # Debug port
+
+  # Override database for development
+  database:
+    ports:
+      - "5432:5432"  # Expose database for local tools
+    environment:
+      POSTGRES_PASSWORD: postgres  # Simple password for dev
+
+  # Override nginx for development
+  nginx:
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro  # Use dev config
+    ports:
+      - "8080:80"  # Different port to avoid conflicts
