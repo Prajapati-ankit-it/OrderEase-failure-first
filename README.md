@@ -9,6 +9,7 @@ A modern, full-stack restaurant ordering system built with NestJS, React, Postgr
 - [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
 - [Prerequisites](#-prerequisites)
+- [Docker Setup](#-docker-setup)
 - [Local Setup](#-local-setup)
 - [Environment Configuration](#-environment-configuration)
 - [Running the Application](#-running-the-application)
@@ -158,7 +159,204 @@ Before setting up OrderEase, ensure you have the following installed on your sys
 - **Disk Space**: At least 2GB free space for dependencies
 - **Network**: Internet connection for installing packages
 
-## 🔧 Local Setup
+## � Docker Setup
+
+OrderEase includes a production-ready Docker setup with NGINX reverse proxy, PostgreSQL database, and multi-stage builds. This is the recommended approach for both development and production.
+
+### Prerequisites for Docker
+
+1. **Docker Desktop** (or Docker Engine + Docker Compose)
+   - Download: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+   - Verify installation: `docker --version` and `docker-compose --version`
+
+2. **Make** (optional, for convenient commands)
+   - Most systems have make pre-installed
+   - Verify: `make --version`
+
+### Quick Start
+
+The fastest way to get started is using the Makefile:
+
+```bash
+# For development
+make quick-dev
+
+# For production
+make quick-prod
+```
+
+### Manual Docker Setup
+
+#### Development Environment
+
+1. **Copy environment file:**
+   ```bash
+   cp .env.docker .env
+   # Edit .env with your configuration
+   ```
+
+2. **Start development containers:**
+   ```bash
+   docker-compose -f docker-compose.dev.yml up -d
+   ```
+
+3. **Setup database:**
+   ```bash
+   docker-compose -f docker-compose.dev.yml exec backend npm run prisma:migrate
+   docker-compose -f docker-compose.dev.yml exec backend npm run prisma:seed
+   ```
+
+#### Production Environment
+
+1. **Copy and configure environment:**
+   ```bash
+   cp .env.docker .env
+   # IMPORTANT: Update all secrets and passwords for production!
+   ```
+
+2. **Build and start production containers:**
+   ```bash
+   docker-compose build
+   docker-compose up -d
+   ```
+
+3. **Setup database:**
+   ```bash
+   docker-compose exec backend npm run prisma:migrate:prod
+   docker-compose exec backend npm run prisma:seed
+   ```
+
+### Docker Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        NGINX (Port 80)                      │
+│                   Reverse Proxy & Load Balancer             │
+├─────────────────────────────────────────────────────────────┤
+│  /api/* → Backend Service (Port 3000)                      │
+│  /health → Health Check Endpoint                            │
+│  /* → Frontend Service (Port 3001) [Optional]               │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+            ┌───────▼────────┐  ┌──────▼──────┐
+            │   Backend      │  │  Database   │
+            │   (NestJS)     │  │ (PostgreSQL)│
+            │   Port 3000    │  │  Port 5432  │
+            └────────────────┘  └─────────────┘
+```
+
+### Available Docker Commands
+
+#### Using Makefile (Recommended)
+
+```bash
+# Development commands
+make dev-build          # Build development containers
+make dev-up             # Start development containers
+make dev-logs           # Show development logs
+make dev-down           # Stop development containers
+make dev-clean          # Clean development containers
+
+# Production commands
+make prod-build         # Build production containers
+make prod-up            # Start production containers
+make prod-logs          # Show production logs
+make prod-down          # Stop production containers
+make prod-clean         # Clean production containers
+
+# Database commands
+make db-migrate         # Run database migrations
+make db-seed            # Seed database with sample data
+make db-studio          # Open Prisma Studio (dev only)
+make db-reset           # Reset database (dev only)
+
+# Utility commands
+make status             # Show container status
+make health             # Check health of all services
+make shell-backend      # Open shell in backend container
+make shell-db           # Open database shell
+```
+
+#### Manual Docker Commands
+
+```bash
+# Development
+docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.dev.yml logs -f
+docker-compose -f docker-compose.dev.yml down
+
+# Production
+docker-compose up -d
+docker-compose logs -f
+docker-compose down
+
+# Database operations
+docker-compose exec backend npm run prisma:migrate
+docker-compose exec backend npm run prisma:seed
+docker-compose exec database psql -U postgres -d orderease
+```
+
+### Environment Variables for Docker
+
+Key environment variables for Docker setup (see `.env.docker`):
+
+```env
+# Database
+DB_NAME=orderease
+DB_USER=postgres
+DB_PASSWORD=change_this_secure_password
+DB_PORT=5432
+
+# JWT (Generate strong secrets!)
+JWT_SECRET=your_super_secure_jwt_secret_minimum_32_characters_long
+JWT_REFRESH_SECRET=your_super_secure_refresh_secret_minimum_32_characters_long
+
+# Application
+NODE_ENV=production
+BACKEND_PORT=3000
+HTTP_PORT=80
+HTTPS_PORT=443
+
+# CORS
+CORS_ORIGIN=http://localhost
+```
+
+### NGINX Reverse Proxy Configuration
+
+The NGINX reverse proxy provides:
+
+- **API Routing**: `/api/*` → Backend service
+- **Rate Limiting**: 10 requests/second for API, 5 requests/minute for login
+- **Security Headers**: XSS protection, content security policy, etc.
+- **GZIP Compression**: Automatic compression for responses
+- **Health Checks**: `/health` endpoint for monitoring
+- **Load Balancing**: Ready for horizontal scaling
+
+### Ports Exposed
+
+- **80**: HTTP (NGINX reverse proxy)
+- **443**: HTTPS (when SSL certificates are added)
+- **3000**: Backend (direct access, not recommended in production)
+- **5432**: PostgreSQL (for development/debugging)
+
+### Volume Management
+
+- **PostgreSQL Data**: Persistent database storage
+- **Backend Uploads**: File upload storage
+- **NGINX Logs**: Access and error logs
+- **Source Code**: Development hot-reload (dev mode only)
+
+### Production Considerations
+
+1. **Security**: Update all passwords and secrets in `.env`
+2. **SSL**: Add SSL certificates to NGINX for HTTPS
+3. **Backups**: Implement database backup strategy
+4. **Monitoring**: Add health check monitoring
+5. **Scaling**: Ready for horizontal scaling with load balancer
+
+## �🔧 Local Setup
 
 Follow these steps to set up OrderEase on your local machine for the first time.
 
