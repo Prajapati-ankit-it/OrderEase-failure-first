@@ -61,7 +61,7 @@ function checkCertificates() {
 
 function printSetupInstructions() {
   log('\n📖 Setup Instructions:', 'cyan');
-  log('=' .repeat(60), 'cyan');
+  log('='.repeat(60), 'cyan');
   
   log('\n1️⃣  Install mkcert (if not already installed):', 'yellow');
   log('\n   macOS:', 'blue');
