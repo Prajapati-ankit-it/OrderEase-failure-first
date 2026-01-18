@@ -42,13 +42,6 @@ module.exports = function(app) {
         proxyReq.setHeader('X-Forwarded-Proto', req.protocol || 'https');
         proxyReq.setHeader('X-Forwarded-For', req.ip || '');
       },
-      onProxyRes: (proxyRes, req, res) => {
-        // Add CORS headers for HTTPS origin
-        proxyRes.headers['Access-Control-Allow-Origin'] = 'https://orderease.dev:3000';
-        proxyRes.headers['Access-Control-Allow-Credentials'] = 'true';
-        proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS';
-        proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With';
-      },
       onError: (err, req, res) => {
         console.error('[Proxy Error]', err.message);
         res.status(500).json({

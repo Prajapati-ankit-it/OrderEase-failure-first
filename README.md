@@ -517,6 +517,44 @@ REACT_APP_ENABLE_LOGGING=true
 - The frontend will run on `http://localhost:3001` by default
 - All environment variables must start with `REACT_APP_` to be accessible in React
 
+### 🔒 Local HTTPS Setup (Optional)
+
+For development scenarios requiring HTTPS (OAuth, service workers, secure cookies), OrderEase supports running the frontend on `https://orderease.dev` with a local custom domain.
+
+**Quick Setup:**
+
+```bash
+# See detailed instructions in HTTPS_SETUP.md
+# Or follow the comprehensive guide in frontend/README.md
+
+# 1. Install mkcert and generate certificates
+brew install mkcert && mkcert -install
+
+# 2. Generate SSL certificates
+cd frontend && mkdir -p certs && cd certs
+mkcert -cert-file orderease.dev.pem -key-file orderease.dev-key.pem orderease.dev localhost 127.0.0.1 ::1
+
+# 3. Update hosts file
+echo "127.0.0.1    orderease.dev" | sudo tee -a /etc/hosts
+
+# 4. Update backend CORS (backend/.env)
+CORS_ORIGIN=http://localhost:3001,https://orderease.dev:3000
+
+# 5. Start frontend with HTTPS
+npm run dev:https
+```
+
+**Architecture:**
+```
+Browser (https://orderease.dev:3000)
+   ↓
+Frontend Dev Server (HTTPS)
+   ↓ proxy (/api)
+Backend API (HTTP on localhost:3000)
+```
+
+📖 **Full documentation**: See [HTTPS_SETUP.md](./HTTPS_SETUP.md) for platform-specific instructions and troubleshooting.
+
 ## 🚀 Running the Application
 
 ### Initialize the Database
