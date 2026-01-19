@@ -18,6 +18,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "dev:https": "node scripts/setup-https.js && cross-env HTTPS=true PORT=3001 SSL_CRT_FILE=certs/orderease.dev.pem SSL_KEY_FILE=certs/orderease.dev-key.pem HOST=orderease.dev react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -42,6 +43,8 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.22",
+    "cross-env": "^7.0.3",
+    "http-proxy-middleware": "^2.0.6",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17"
   }
