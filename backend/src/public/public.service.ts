@@ -23,6 +23,7 @@ export class PublicService {
       description: food.description,
       price: food.price,
       category: food.category,
+      isAvailable: food.isAvailable,
       image: food.image,
     }));
   }

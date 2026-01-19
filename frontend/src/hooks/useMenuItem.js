@@ -10,16 +10,16 @@ import { addToCart } from '../redux/slices/cartSlice';
 /**
  * Hook to handle adding a menu item to the cart
  * @param {Object} item - The menu item to add
- * @param {string} item._id - Required unique identifier
+ * @param {string} item.id - Required unique identifier
  * @returns {Object} Handler function for adding to cart
  */
 const useAddToCart = (item) => {
   const dispatch = useDispatch();
 
   const handleAddToCart = useCallback(() => {
-    if (!item || typeof item !== 'object' || !item._id) {
+    if (!item || typeof item !== 'object' || !item.id) {
       if (process.env.NODE_ENV !== 'production') {
-        console.error('useAddToCart: item parameter must be an object with _id property', item);
+        console.error('useAddToCart: item parameter must be an object with id property', item);
       }
       return;
     }
