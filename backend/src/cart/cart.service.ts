@@ -126,7 +126,10 @@ export class CartService {
       }
 
       // Verify ownership
-      const ownsItem = await this.cartRepository.verifyItemOwnership(userId, itemId);
+      const ownsItem = await this.cartRepository.verifyItemOwnership(
+        userId,
+        itemId,
+      );
       if (!ownsItem) {
         throw CartDomainError.itemNotFound();
       }
@@ -163,7 +166,10 @@ export class CartService {
       }
 
       // Verify ownership
-      const ownsItem = await this.cartRepository.verifyItemOwnership(userId, itemId);
+      const ownsItem = await this.cartRepository.verifyItemOwnership(
+        userId,
+        itemId,
+      );
       if (!ownsItem) {
         throw CartDomainError.itemNotFound();
       }

@@ -38,12 +38,20 @@ export interface ICartRepository {
   /**
    * Add or update item in cart
    */
-  addOrUpdateItem(userId: string, foodId: string, quantity: number): Promise<void>;
+  addOrUpdateItem(
+    userId: string,
+    foodId: string,
+    quantity: number,
+  ): Promise<void>;
 
   /**
    * Update cart item quantity
    */
-  updateItemQuantity(userId: string, itemId: string, quantity: number): Promise<void>;
+  updateItemQuantity(
+    userId: string,
+    itemId: string,
+    quantity: number,
+  ): Promise<void>;
 
   /**
    * Remove item from cart
