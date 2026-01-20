@@ -13,8 +13,7 @@ import {
   type IFoodRepository,
   FOOD_REPOSITORY,
 } from '../food/infra/food.repository.interface';
-import { FoodDomainError } from '@orderease/shared-errors';
-import { CartDomainError } from './domain/cart.errors';
+import { FoodDomainError, CartDomainError } from '@orderease/shared-errors';
 
 @Injectable()
 export class CartService {
