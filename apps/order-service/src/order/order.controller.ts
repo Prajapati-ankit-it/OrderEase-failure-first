@@ -16,7 +16,7 @@ import {
   CreateOrderFromCartDto,
   UpdateOrderStatusDto,
 } from '@orderease/shared-dtos';
-
+import { UserId } from '../common/decorators';
 import { Role, MESSAGES } from '@orderease/shared-types';
 import { successResponse } from '@orderease/shared-utils';
 
@@ -27,11 +27,11 @@ export class OrderController {
   /**
    * Create a new order (Logged-in users)
    * POST /order
+   * Note: API Gateway handles authentication and sets x-user-id header
    */
   @Post()
-  
   async create(
-    @Param('userId') userId: string = 'user-1',
+    @UserId() userId: string,
     @Body() createOrderDto: CreateOrderDto,
   ) {
     const order = await this.orderService.create(userId, createOrderDto);
@@ -41,11 +41,11 @@ export class OrderController {
   /**
    * Create order from cart (Logged-in users)
    * POST /order/from-cart
+   * Note: API Gateway handles authentication and sets x-user-id header
    */
   @Post('from-cart')
-  
   async createFromCart(
-    @Param('userId') userId: string = 'user-1',
+    @UserId() userId: string,
     @Body() createOrderFromCartDto: CreateOrderFromCartDto,
   ) {
     const order = await this.orderService.createFromCart(
@@ -58,9 +58,9 @@ export class OrderController {
   /**
    * Get all orders (Admin only)
    * GET /order
+   * Note: API Gateway enforces admin role
    */
   @Get()
-  @Auth(Role.ADMIN)
   async findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
@@ -73,9 +73,9 @@ export class OrderController {
   /**
    * Get order by ID (Admin can see all, users can see own orders)
    * GET /order/:id
+   * Note: API Gateway handles authentication and authorization
    */
   @Get(':id')
-  
   async findOne(@Param('id') id: string) {
     const order = await this.orderService.findOne(id);
     return successResponse(MESSAGES.GENERAL.SUCCESS, order);
@@ -84,9 +84,9 @@ export class OrderController {
   /**
    * Update order status (Admin only)
    * PUT /order/:id/status
+   * Note: API Gateway enforces admin role
    */
   @Put(':id/status')
-  @Auth(Role.ADMIN)
   async updateStatus(
     @Param('id') id: string,
     @Body() updateStatusDto: UpdateOrderStatusDto,
@@ -98,9 +98,9 @@ export class OrderController {
   /**
    * Delete order (Admin only)
    * DELETE /order/:id
+   * Note: API Gateway enforces admin role
    */
   @Delete(':id')
-  @Auth(Role.ADMIN)
   async remove(@Param('id') id: string) {
     const result = await this.orderService.remove(id);
     return successResponse(result.message);
