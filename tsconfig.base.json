@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["ES2023"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@orderease/shared-contracts": ["./packages/shared-contracts/src"],
+      "@orderease/shared-contracts/*": ["./packages/shared-contracts/src/*"],
+      "@orderease/shared-utils": ["./packages/shared-utils/src"],
+      "@orderease/shared-utils/*": ["./packages/shared-utils/src/*"],
+      "@orderease/shared-errors": ["./packages/shared-errors/src"],
+      "@orderease/shared-errors/*": ["./packages/shared-errors/src/*"],
+      "@orderease/shared-config": ["./packages/shared-config/src"],
+      "@orderease/shared-config/*": ["./packages/shared-config/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}

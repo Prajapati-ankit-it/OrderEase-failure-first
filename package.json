@@ -1,7 +1,8 @@
 {
   "name": "orderease",
   "version": "1.0.0",
-  "description": "Restaurant Ordering System - Full Stack MERN Application",
+  "private": true,
+  "description": "Restaurant Ordering System - Full Stack Application",
   "scripts": {
     "install-all": "npm install --prefix backend && npm install --prefix frontend",
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm start --prefix frontend\"",
@@ -13,11 +14,13 @@
   "keywords": [
     "restaurant",
     "ordering",
-    "mern",
+    "monorepo",
+    "pnpm-workspace",
+    "nestjs",
     "react",
     "nodejs",
-    "mongodb",
-    "express"
+    "postgresql",
+    "prisma"
   ],
   "author": "TechSign",
   "license": "MIT",
@@ -27,5 +30,9 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
   }
 }

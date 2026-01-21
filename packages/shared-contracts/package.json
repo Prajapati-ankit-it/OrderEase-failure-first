@@ -1,0 +1,32 @@
+{
+  "name": "@orderease/shared-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared DTOs, enums, and interfaces for OrderEase",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "orderease",
+    "types",
+    "dtos",
+    "interfaces"
+  ],
+  "author": "TechSign",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/jest": "^30.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.6"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "mocha": "^11.7.5"
+  }
+}
