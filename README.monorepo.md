@@ -1,6 +1,6 @@
 # OrderEase Monorepo
 
-A pnpm workspace-based monorepo for the OrderEase restaurant ordering system.
+A pnpm workspace-based monorepo for the OrderEase restaurant ordering system with scalable microservices architecture.
 
 ## 🏗️ Architecture
 
@@ -9,15 +9,17 @@ This monorepo follows Clean Architecture principles with clear separation of con
 ```
 orderease/
 ├── apps/
-│   ├── api-gateway/        # Authentication, rate limiting, routing (stub)
-│   ├── order-service/      # Core business logic for orders, cart, food, users
-│   └── payment-service/    # Payment processing (stub - future implementation)
+│   ├── api-gateway/        # HTTP routing, JWT verification, rate limiting (minimal)
+│   ├── backend/            # Auth, User, Admin, Food services
+│   ├── order-service/      # Order and Cart domain services
+│   └── payment-service/    # Payment processing (stub)
 │
 ├── packages/
-│   ├── shared-types/       # DTOs, enums, interfaces, constants
-│   ├── shared-utils/       # Pure utilities (password, jwt, response)
+│   ├── shared-dtos/        # ALL DTOs (auth, user, admin, food, cart, order)
+│   ├── shared-types/       # Enums, interfaces, constants
+│   ├── shared-utils/       # Pure utilities (password, jwt, response, logger)
 │   ├── shared-errors/      # Domain error classes
-│   └── shared-config/      # Environment validation schemas
+│   └── shared-config/      # Environment validation schemas (Zod)
 │
 ├── pnpm-workspace.yaml
 ├── package.json
@@ -26,25 +28,67 @@ orderease/
 
 ## 📦 Packages
 
-### Shared Packages
+### Shared Packages (Monorepo Core)
 
-- **@orderease/shared-types**: Common types, enums, and constants
-- **@orderease/shared-utils**: Reusable utilities (password hashing, JWT parsing, response formatting)
-- **@orderease/shared-errors**: Domain error classes (OrderDomainError, CartDomainError, etc.)
-- **@orderease/shared-config**: Environment variable validation using Zod
+All shared code lives in `packages/*` for reusability across services:
+
+#### **@orderease/shared-dtos**
+All Data Transfer Objects used by services:
+- Auth: `SignUpDto`, `LoginDto`
+- User: `UpdateProfileDto`, `UpdatePasswordDto`
+- Admin: `UpdateUserRoleDto`, `AdminUpdateUserDto`
+- Food: `CreateFoodDto`, `UpdateFoodDto`
+- Cart: `AddToCartDto`, `UpdateCartItemDto`
+- Order: `CreateOrderDto`, `CreateOrderFromCartDto`, `UpdateOrderStatusDto`, `OrderStatus`
+
+#### **@orderease/shared-types**
+Common types, enums, and constants:
+- `Role` enum (USER, ADMIN)
+- `MESSAGES` constants
+- `ERROR_CODES` constants
+
+#### **@orderease/shared-utils**
+Pure utility functions (no business logic):
+- Password hashing/comparison (bcrypt)
+- JWT parsing helpers
+- Response formatting utilities
+
+#### **@orderease/shared-errors**
+Domain error classes:
+- `BaseDomainError` (base class)
+- `OrderDomainError`, `CartDomainError`, `FoodDomainError`, `UserDomainError`
+
+#### **@orderease/shared-config**
+Environment validation using Zod:
+- Environment variable schemas
+- Configuration validation
 
 ### Applications
 
-- **@orderease/order-service**: Main backend service with NestJS, Prisma, and PostgreSQL
-  - Auth module
-  - User management
-  - Order management
-  - Cart management
-  - Food catalog
-  - Admin dashboard
-  
-- **@orderease/api-gateway**: (Stub) Future API gateway for routing and auth
-- **@orderease/payment-service**: (Stub) Future payment processing service
+#### **@orderease/backend** (NestJS + Prisma + PostgreSQL)
+Non-order business services:
+- **Auth**: Signup, login, JWT authentication
+- **User**: Profile management, password updates
+- **Admin**: Dashboard, user management
+- **Food**: Menu catalog management
+- **Health**: Health checks
+- **Public**: Public endpoints
+
+#### **@orderease/order-service** (NestJS + Prisma + PostgreSQL)
+Order domain services:
+- **Order**: Order creation, management, status updates
+- **Cart**: Shopping cart operations
+- **Food**: Food repository (temporary - will be replaced with HTTP calls)
+
+#### **@orderease/api-gateway** (NestJS)
+Minimal HTTP proxy for routing:
+- Routes `/api/auth/*`, `/api/user/*`, `/api/admin/*`, `/api/food/*` → Backend (port 3001)
+- Routes `/api/order/*`, `/api/cart/*` → Order Service (port 3002)
+- JWT verification (planned)
+- Rate limiting (planned)
+
+#### **@orderease/payment-service** (Stub)
+Future payment processing service
 
 ## 🚀 Getting Started
 

@@ -18,6 +18,8 @@ dist/
 **/dist/
 coverage/
 **/coverage/
+*.tsbuildinfo
+**/*.tsbuildinfo
 
 # Logs
 logs
