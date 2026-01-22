@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { Role } from '../../constants';
+import { Role } from '@orderease/shared-contracts';
 
 export const ROLES_KEY = 'roles';
 

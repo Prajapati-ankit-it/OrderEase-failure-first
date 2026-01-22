@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { UpdateUserRoleDto, AdminUpdateUserDto } from './dto';
-import { MESSAGES } from '../constants';
+import { MESSAGES } from '@orderease/shared-contracts';
 import {
   type IUserRepository,
   USER_REPOSITORY,
@@ -9,7 +9,6 @@ import {
   type IOrderRepository,
   ORDER_REPOSITORY,
 } from '../order/infra/order.repository.interface';
-import { User } from '../../../../packages/shared-contracts/src/domain/user.entity';
 
 @Injectable()
 export class AdminService {

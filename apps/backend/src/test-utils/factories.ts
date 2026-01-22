@@ -1,4 +1,4 @@
-import { Role } from '../constants';
+import { Role } from '@orderease/shared-contracts';
 import { PrismaService } from '../database';
 import { hashPassword } from '../utils';
 

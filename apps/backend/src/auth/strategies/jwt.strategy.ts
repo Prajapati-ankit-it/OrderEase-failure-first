@@ -2,7 +2,7 @@ import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { MESSAGES } from '../../constants';
+import { MESSAGES } from '@orderease/shared-contracts';
 import {
   type IUserRepository,
   USER_REPOSITORY,

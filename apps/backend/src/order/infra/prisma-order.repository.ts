@@ -127,21 +127,19 @@ export class PrismaOrderRepository implements IOrderRepository {
    * Map Prisma model to Domain entity
    * This is where we isolate Prisma from domain
    */
-  private toDomain(
-    prismaOrder: {
-      id: string;
-      userId: string;
-      totalPrice: number;
-      status: PrismaOrderStatus;
-      createdAt: Date;
-      updatedAt: Date;
-      orderItems: Array<{
-        foodId: string;
-        quantity: number;
-        price: number;
-      }>;
-    },
-  ): Order {
+  private toDomain(prismaOrder: {
+    id: string;
+    userId: string;
+    totalPrice: number;
+    status: PrismaOrderStatus;
+    createdAt: Date;
+    updatedAt: Date;
+    orderItems: Array<{
+      foodId: string;
+      quantity: number;
+      price: number;
+    }>;
+  }): Order {
     const items: OrderItem[] = prismaOrder.orderItems.map((item) => ({
       foodId: item.foodId,
       quantity: item.quantity,

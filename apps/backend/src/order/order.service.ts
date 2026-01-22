@@ -1,10 +1,15 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   CreateOrderDto,
   CreateOrderFromCartDto,
   UpdateOrderStatusDto,
 } from './dto/order.dto';
-import { MESSAGES } from '../constants';
+import { MESSAGES } from '@orderease/shared-contracts';
 import { Order, OrderItem } from './domain/order.entity';
 import {
   validateOrderItems,
@@ -92,7 +97,11 @@ export class OrderService {
     } catch (error) {
       if (error instanceof OrderDomainError) {
         // Map domain errors to appropriate HTTP exceptions
-        if (error.code === 'EMPTY_ORDER' || error.code === 'INVALID_QUANTITY' || error.code === 'INVALID_PRICE') {
+        if (
+          error.code === 'EMPTY_ORDER' ||
+          error.code === 'INVALID_QUANTITY' ||
+          error.code === 'INVALID_PRICE'
+        ) {
           throw new BadRequestException(error.message);
         }
         throw new NotFoundException(error.message);
@@ -112,9 +121,8 @@ export class OrderService {
 
     try {
       // Get user's cart with details
-      const cartData = await this.cartRepository.findByUserIdWithDetails(
-        userId,
-      );
+      const cartData =
+        await this.cartRepository.findByUserIdWithDetails(userId);
 
       if (!cartData || cartData.cart.isEmpty()) {
         throw OrderDomainError.emptyCart();

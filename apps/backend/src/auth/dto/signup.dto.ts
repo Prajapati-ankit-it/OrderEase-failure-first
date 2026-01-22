@@ -5,16 +5,15 @@ import {
   IsOptional,
   IsEnum,
 } from 'class-validator';
-import { Role } from '../../constants';
+import { Role } from '@orderease/shared-contracts';
 
 export class SignUpDto {
   @IsEmail({}, { message: 'Please provide a valid email' })
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(6, { message: 'Password must be at least 6 characters' })
-  password: string;
-
+  password!: string;
   @IsString()
   @IsOptional()
   name?: string;

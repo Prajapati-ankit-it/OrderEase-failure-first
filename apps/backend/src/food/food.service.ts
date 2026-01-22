@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { CreateFoodDto, UpdateFoodDto } from './dto/food.dto';
-import { MESSAGES } from '../constants';
+import { MESSAGES } from '@orderease/shared-contracts';
 import { Food } from './domain/food.entity';
 import {
   type IFoodRepository,
@@ -69,10 +69,12 @@ export class FoodService {
     if (updateFoodDto.name !== undefined) updateData.name = updateFoodDto.name;
     if (updateFoodDto.description !== undefined)
       updateData.description = updateFoodDto.description;
-    if (updateFoodDto.price !== undefined) updateData.price = updateFoodDto.price;
+    if (updateFoodDto.price !== undefined)
+      updateData.price = updateFoodDto.price;
     if (updateFoodDto.category !== undefined)
       updateData.category = updateFoodDto.category;
-    if (updateFoodDto.image !== undefined) updateData.image = updateFoodDto.image;
+    if (updateFoodDto.image !== undefined)
+      updateData.image = updateFoodDto.image;
     if (updateFoodDto.isAvailable !== undefined)
       updateData.isAvailable = updateFoodDto.isAvailable;
 

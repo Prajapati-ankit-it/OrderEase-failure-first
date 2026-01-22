@@ -11,7 +11,7 @@ import {
 import { FoodService } from './food.service';
 import { CreateFoodDto, UpdateFoodDto } from './dto/food.dto';
 import { Auth } from '../auth/decorators';
-import { Role, MESSAGES } from '../constants';
+import { Role, MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '../utils';
 
 @Controller('food')

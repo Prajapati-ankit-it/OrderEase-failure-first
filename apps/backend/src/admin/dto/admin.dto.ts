@@ -1,9 +1,9 @@
 import { IsEnum, IsOptional, IsString, IsEmail } from 'class-validator';
-import { Role } from '../../constants';
+import { Role } from '@orderease/shared-contracts';
 
 export class UpdateUserRoleDto {
   @IsEnum(Role, { message: 'Role must be either ADMIN or USER' })
-  role: Role;
+  role!: Role;
 }
 
 export class AdminUpdateUserDto {

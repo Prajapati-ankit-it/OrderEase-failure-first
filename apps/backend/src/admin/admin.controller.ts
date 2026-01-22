@@ -12,7 +12,7 @@ import {
 import { AdminService } from './admin.service';
 import { UpdateUserRoleDto, AdminUpdateUserDto } from './dto';
 import { Auth, CurrentUser } from '../auth/decorators';
-import { Role, MESSAGES } from '../constants';
+import { Role, MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '../utils';
 
 @Controller('admin')

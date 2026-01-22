@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { successResponse } from '../utils';
-import { MESSAGES } from '../constants';
+import { MESSAGES } from '@orderease/shared-contracts';
 
 @Controller('menu')
 export class MenuController {

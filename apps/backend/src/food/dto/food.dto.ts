@@ -8,7 +8,7 @@ import {
 
 export class CreateFoodDto {
   @IsString()
-  name: string;
+  name!: string;
 
   @IsString()
   @IsOptional()
@@ -16,10 +16,10 @@ export class CreateFoodDto {
 
   @IsNumber()
   @Min(0)
-  price: number;
+  price!: number;
 
   @IsString()
-  category: string;
+  category!: string;
 
   @IsString()
   @IsOptional()

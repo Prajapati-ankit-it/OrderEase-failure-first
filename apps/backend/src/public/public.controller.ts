@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { successResponse } from '../utils';
-import { MESSAGES } from '../constants';
+import { MESSAGES } from '@orderease/shared-contracts';
 
 @Controller('public')
 export class PublicController {

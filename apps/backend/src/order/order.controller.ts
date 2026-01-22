@@ -17,7 +17,7 @@ import {
   UpdateOrderStatusDto,
 } from './dto/order.dto';
 import { Auth, CurrentUser } from '../auth/decorators';
-import { Role, MESSAGES } from '../constants';
+import { Role, MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '../utils';
 
 @Controller('order')

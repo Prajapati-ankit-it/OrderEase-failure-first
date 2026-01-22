@@ -12,18 +12,18 @@ import { Type } from 'class-transformer';
 
 export class CreateOrderItemDto {
   @IsString()
-  foodId: string;
+  foodId!: string;
 
   @IsNumber()
   @Min(1)
-  quantity: number;
+  quantity!: number;
 }
 
 export class CreateOrderDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateOrderItemDto)
-  items: CreateOrderItemDto[];
+  items!: CreateOrderItemDto[];
 }
 
 export class CreateOrderFromCartDto {
@@ -42,5 +42,5 @@ export enum OrderStatus {
 
 export class UpdateOrderStatusDto {
   @IsEnum(OrderStatus, { message: 'Invalid order status' })
-  status: OrderStatus;
+  status!: OrderStatus;
 }

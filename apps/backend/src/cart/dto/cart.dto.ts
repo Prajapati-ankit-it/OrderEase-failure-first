@@ -6,11 +6,11 @@ import { IsString, IsInt, Min, IsNotEmpty } from 'class-validator';
 export class AddToCartDto {
   @IsString()
   @IsNotEmpty()
-  foodId: string;
+  foodId!: string;
 
   @IsInt()
   @Min(1)
-  quantity: number;
+  quantity!: number;
 }
 
 /**
@@ -19,5 +19,5 @@ export class AddToCartDto {
 export class UpdateCartItemDto {
   @IsInt()
   @Min(0)
-  quantity: number;
+  quantity!: number;
 }

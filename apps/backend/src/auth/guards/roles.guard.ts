@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { Role, MESSAGES } from '../../constants';
+import { Role, MESSAGES } from '@orderease/shared-contracts';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
 interface RequestWithUser extends Request {

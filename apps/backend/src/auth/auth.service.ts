@@ -8,12 +8,12 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { SignUpDto, LoginDto } from './dto';
 import { hashPassword, comparePassword, parseJwtExpiration } from '../utils';
-import { MESSAGES, Role } from '../constants';
+import { MESSAGES } from '@orderease/shared-contracts';
 import {
   type IUserRepository,
   USER_REPOSITORY,
 } from '../user/infra/user.repository.interface';
-import { User, UserRole } from '../../../../packages/shared-contracts/src/domain/user.entity';
+import { User, UserRole } from '@orderease/shared-contracts';
 
 @Injectable()
 export class AuthService {

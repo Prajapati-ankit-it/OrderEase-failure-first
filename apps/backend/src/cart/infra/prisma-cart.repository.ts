@@ -209,18 +209,16 @@ export class PrismaCartRepository implements ICartRepository {
     return cart !== null && cart.cartItems.length > 0;
   }
 
-  private toDomain(
-    prismaCart: {
-      id: string;
-      userId: string;
-      createdAt: Date;
-      updatedAt: Date;
-      cartItems: Array<{
-        foodId: string;
-        quantity: number;
-      }>;
-    },
-  ): Cart {
+  private toDomain(prismaCart: {
+    id: string;
+    userId: string;
+    createdAt: Date;
+    updatedAt: Date;
+    cartItems: Array<{
+      foodId: string;
+      quantity: number;
+    }>;
+  }): Cart {
     const items: CartItemProps[] = prismaCart.cartItems.map((item) => ({
       foodId: item.foodId,
       quantity: item.quantity,

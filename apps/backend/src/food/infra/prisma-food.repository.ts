@@ -105,19 +105,17 @@ export class PrismaFoodRepository implements IFoodRepository {
     });
   }
 
-  private toDomain(
-    prismaFood: {
-      id: string;
-      name: string;
-      description: string | null;
-      price: number;
-      category: string;
-      image: string | null;
-      isAvailable: boolean;
-      createdAt: Date;
-      updatedAt: Date;
-    },
-  ): Food {
+  private toDomain(prismaFood: {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    category: string;
+    image: string | null;
+    isAvailable: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }): Food {
     return new Food({
       id: prismaFood.id,
       name: prismaFood.name,
