@@ -8,17 +8,17 @@ import {
   CreateOrderDto,
   CreateOrderFromCartDto,
   UpdateOrderStatusDto,
-} from './dto/order.dto';
+} from '@orderease/shared-contracts';
 import { MESSAGES } from '@orderease/shared-contracts';
-import { Order, OrderItem } from './domain/order.entity';
+import { Order, OrderItem } from '@orderease/shared-contracts';
 import {
   validateOrderItems,
   validateItemQuantities,
   validateItemPrices,
   validateFoodAvailability,
   buildOrderItems,
-} from './domain/order.rules';
-import { OrderDomainError } from './domain/order.errors';
+} from '@orderease/shared-contracts';
+import { OrderDomainError } from '@orderease/shared-contracts';
 import {
   type IOrderRepository,
   ORDER_REPOSITORY,

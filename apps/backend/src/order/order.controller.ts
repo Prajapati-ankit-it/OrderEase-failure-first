@@ -15,7 +15,7 @@ import {
   CreateOrderDto,
   CreateOrderFromCartDto,
   UpdateOrderStatusDto,
-} from './dto/order.dto';
+} from '@orderease/shared-contracts';
 import { Auth, CurrentUser } from '../auth/decorators';
 import { Role, MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '@orderease/shared-contracts';

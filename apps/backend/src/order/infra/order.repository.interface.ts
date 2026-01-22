@@ -4,7 +4,7 @@
  * Domain layer can depend on this interface without knowing about Prisma
  */
 
-import { Order } from '../domain/order.entity';
+import { Order } from '@orderease/shared-contracts';
 
 export interface OrderListFilter {
   status?: string;

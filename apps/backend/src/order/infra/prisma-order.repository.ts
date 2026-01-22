@@ -5,7 +5,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database';
-import { Order, OrderStatus, OrderItem } from '../domain/order.entity';
+import { Order, OrderStatus, OrderItem } from '@orderease/shared-contracts';
 import {
   IOrderRepository,
   OrderListFilter,

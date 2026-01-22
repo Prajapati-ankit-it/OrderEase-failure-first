@@ -9,6 +9,7 @@ import {
   IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { OrderStatus } from '../domain';
 
 export class CreateOrderItemDto {
   @IsString()
@@ -30,14 +31,6 @@ export class CreateOrderFromCartDto {
   @IsOptional()
   @IsBoolean()
   clearCart?: boolean;
-}
-
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  PREPARING = 'PREPARING',
-  READY = 'READY',
-  DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED',
 }
 
 export class UpdateOrderStatusDto {
