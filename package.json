@@ -34,7 +34,13 @@
     "url": "https://github.com/TECH-SIGN/OrderEase.git"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "eslint": "8.57.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "eslint": "8.57.0"
+    }
   },
   "engines": {
     "node": ">=18.0.0",

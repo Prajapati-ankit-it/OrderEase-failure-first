@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../database';
+import { PrismaService } from '@orderease/shared-database';
 import { Order, OrderStatus, OrderItem } from '../domain/order.entity';
 import {
   IOrderRepository,

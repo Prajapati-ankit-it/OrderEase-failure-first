@@ -3,13 +3,12 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { PrismaService } from '../database';
+import { PrismaService } from '@orderease/shared-database';
 import {
   createMockPrismaService,
   createMockJwtService,
   createMockConfigService,
 } from '../test-utils';
-import * as bcrypt from 'bcrypt';
 import { Role, MESSAGES } from '@orderease/shared-contracts';
 
 // Mock the utils module

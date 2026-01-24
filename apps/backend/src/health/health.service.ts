@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../database';
+import { PrismaService } from '@orderease/shared-database';
 
 @Injectable()
 export class HealthService {

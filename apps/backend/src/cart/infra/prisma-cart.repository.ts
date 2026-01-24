@@ -3,7 +3,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../database';
+import { PrismaService } from '@orderease/shared-database';
 import { Cart, CartItemProps } from '@orderease/shared-contracts';
 import {
   ICartRepository,

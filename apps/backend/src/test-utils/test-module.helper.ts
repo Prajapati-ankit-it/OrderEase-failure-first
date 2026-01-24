@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { PrismaService } from '../database';
+import { PrismaService } from '@orderease/shared-database';
 import { TestPrismaService } from './test-prisma.service';
 
 /**

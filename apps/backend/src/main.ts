@@ -8,7 +8,7 @@ import {
   GlobalExceptionFilter,
   LoggingInterceptor,
 } from './common';
-import { validateEnv } from './config';
+import { validateEnv } from '@orderease/shared-config';
 
 /**
  * Parse and validate CORS origins from configuration

@@ -7,7 +7,10 @@
   "scripts": {
     "build": "tsc"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@nestjs/common": "^11.1.12",
+    "@nestjs/config": "^4.0.2"
+  },
   "devDependencies": {
     "typescript": "^5.7.2"
   }

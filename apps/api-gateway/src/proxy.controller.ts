@@ -1,5 +1,5 @@
 import { Controller, All, Req, Res, HttpStatus } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { ProxyService } from './proxy.service';
 
 @Controller()

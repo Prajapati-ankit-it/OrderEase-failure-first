@@ -1,7 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { CreateFoodDto, UpdateFoodDto } from '@orderease/shared-contracts';
+import { CreateFoodDto } from '@orderease/shared-contracts';
 import { MESSAGES } from '@orderease/shared-contracts';
-import { Food } from './domain/food.entity';
+import { Food } from '@orderease/shared-contracts';
 import {
   type IFoodRepository,
   FOOD_REPOSITORY,
@@ -53,7 +53,7 @@ export class FoodService {
   /**
    * Update food item
    */
-  async update(id: string, updateFoodDto: UpdateFoodDto) {
+  async update(id: string) {
     await this.findOne(id); // Check if exists
 
     // Create properly typed update object
@@ -65,16 +65,6 @@ export class FoodService {
       image?: string;
       isAvailable?: boolean;
     } = {};
-
-    if (updateFoodDto.name !== undefined) updateData.name = updateFoodDto.name;
-    if (updateFoodDto.description !== undefined)
-      updateData.description = updateFoodDto.description;
-    if (updateFoodDto.price !== undefined) updateData.price = updateFoodDto.price;
-    if (updateFoodDto.category !== undefined)
-      updateData.category = updateFoodDto.category;
-    if (updateFoodDto.image !== undefined) updateData.image = updateFoodDto.image;
-    if (updateFoodDto.isAvailable !== undefined)
-      updateData.isAvailable = updateFoodDto.isAvailable;
 
     return this.foodRepository.update(id, updateData);
   }

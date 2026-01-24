@@ -13,7 +13,6 @@
   "dependencies": {
     "@orderease/shared-config": "workspace:*",
     "@orderease/shared-errors": "workspace:*",
-    "@orderease/shared-types": "workspace:*",
     "@orderease/shared-utils": "workspace:*"
   }
 }

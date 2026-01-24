@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsEnum,
 } from 'class-validator';
-import { Role } from '@orderease/shared-types';
+import { Role } from '../types/constants';
 
 export class SignUpDto {
   @IsEmail({}, { message: 'Please provide a valid email' })

@@ -11,7 +11,6 @@ import {
   type IUserRepository,
   USER_REPOSITORY,
 } from './infra/user.repository.interface';
-import { User } from '@orderease/shared-contracts';
 
 @Injectable()
 export class UserService {

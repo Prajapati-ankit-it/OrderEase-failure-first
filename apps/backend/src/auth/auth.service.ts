@@ -7,13 +7,19 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { SignUpDto, LoginDto } from '@orderease/shared-contracts';
-import { hashPassword, comparePassword, parseJwtExpiration } from '@orderease/shared-utils';
-import { MESSAGES, Role } from '@orderease/shared-types';
+import {
+  hashPassword,
+  comparePassword,
+  parseJwtExpiration,
+} from '@orderease/shared-utils';
+import { MESSAGES } from '@orderease/shared-contracts';
 import {
   type IUserRepository,
   USER_REPOSITORY,
 } from '../user/infra/user.repository.interface';
-import { User, UserRole } from '@orderease/shared-contracts';
+// Remove User import from shared-contracts and import from backend domain
+import { UserRole } from '@orderease/shared-contracts';
+import { User } from '../user/domain/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +46,7 @@ export class AuthService {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user domain object
+    // Create user domain object using backend domain entity
     const user = new User({
       email,
       password: hashedPassword,

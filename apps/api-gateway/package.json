@@ -22,8 +22,6 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/axios": "^3.0.0",
     "@orderease/shared-config": "workspace:*",
-    "@orderease/shared-dtos": "workspace:*",
-    "@orderease/shared-types": "workspace:*",
     "@orderease/shared-utils": "workspace:*",
     "axios": "^1.6.0",
     "class-transformer": "^0.5.1",

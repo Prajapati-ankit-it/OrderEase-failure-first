@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from './user.service';
-import { PrismaService } from '../database';
+import { PrismaService } from '@orderease/shared-database';
 import { createMockPrismaService } from '../test-utils';
 import { MESSAGES, Role } from '@orderease/shared-contracts';
 

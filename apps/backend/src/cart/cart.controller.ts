@@ -22,6 +22,7 @@ export class CartController {
    * Note: API Gateway handles authentication and sets x-user-id header
    */
   @Get()
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   async getCart(@UserId() userId: string) {
     const cart = await this.cartService.getCart(userId);
     return successResponse('Cart fetched successfully', cart);

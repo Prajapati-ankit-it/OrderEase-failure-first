@@ -1,4 +1,4 @@
-import { PrismaService } from '../database';
+import { PrismaService } from '@orderease/shared-database';
 
 /**
  * Extended PrismaService for testing with cleanup utilities

@@ -1,11 +1,13 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { UpdateUserRoleDto, AdminUpdateUserDto } from '@orderease/shared-contracts';
-import { MESSAGES } from '@orderease/shared-types';
+import {
+  UpdateUserRoleDto,
+  AdminUpdateUserDto,
+} from '@orderease/shared-contracts';
+import { MESSAGES } from '@orderease/shared-contracts';
 import {
   type IUserRepository,
   USER_REPOSITORY,
 } from '../user/infra/user.repository.interface';
-import { User } from '@orderease/shared-contracts';
 
 @Injectable()
 export class AdminService {

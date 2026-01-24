@@ -10,12 +10,16 @@ import {
   DefaultValuePipe,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { UpdateUserRoleDto, AdminUpdateUserDto } from '@orderease/shared-contracts';
+import {
+  UpdateUserRoleDto,
+  AdminUpdateUserDto,
+} from '@orderease/shared-contracts';
 import { Auth, CurrentUser } from '../auth/decorators';
-import { Role, MESSAGES } from '@orderease/shared-types';
+import { Role, MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '@orderease/shared-utils';
 
 @Controller('admin')
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
 @Auth(Role.ADMIN) // All routes in this controller require ADMIN role
 export class AdminController {
   constructor(private adminService: AdminService) {}

@@ -3,7 +3,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../database';
+import { PrismaService } from '@orderease/shared-database';
 import { User, UserRole, SafeUser } from '../domain/user.entity';
 import { IUserRepository, UserUpdateData } from './user.repository.interface';
 import { Role as PrismaRole } from '@prisma/client';

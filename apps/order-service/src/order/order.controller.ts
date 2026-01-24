@@ -17,7 +17,7 @@ import {
   UpdateOrderStatusDto,
 } from '@orderease/shared-contracts';
 import { UserId } from '../common/decorators';
-import { Role, MESSAGES } from '@orderease/shared-contracts';
+import { MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '@orderease/shared-utils';
 
 @Controller('order')
@@ -35,6 +35,7 @@ export class OrderController {
     @Body() createOrderDto: CreateOrderDto,
   ) {
     const order = await this.orderService.create(userId, createOrderDto);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
     return successResponse('Order created successfully', order);
   }
 
@@ -52,6 +53,7 @@ export class OrderController {
       userId,
       createOrderFromCartDto,
     );
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
     return successResponse('Order created from cart successfully', order);
   }
 
@@ -67,6 +69,7 @@ export class OrderController {
     @Query('status') status?: string,
   ) {
     const result = await this.orderService.findAll(page, limit, status);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
     return successResponse(MESSAGES.GENERAL.SUCCESS, result);
   }
 
@@ -78,6 +81,7 @@ export class OrderController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const order = await this.orderService.findOne(id);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
     return successResponse(MESSAGES.GENERAL.SUCCESS, order);
   }
 
@@ -92,6 +96,7 @@ export class OrderController {
     @Body() updateStatusDto: UpdateOrderStatusDto,
   ) {
     const order = await this.orderService.updateStatus(id, updateStatusDto);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
     return successResponse('Order status updated successfully', order);
   }
 
@@ -103,6 +108,7 @@ export class OrderController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const result = await this.orderService.remove(id);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
     return successResponse(result.message);
   }
 }

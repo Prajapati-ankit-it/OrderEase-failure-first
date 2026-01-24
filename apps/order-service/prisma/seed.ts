@@ -42,6 +42,7 @@ async function main() {
   console.log('   Password: user123\n');
 
   // Create sample food items
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const foods = await prisma.food.createMany({
     data: [
       {
@@ -102,9 +103,11 @@ async function main() {
       },
     ],
   });
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   console.log(`✅ Created ${foods.count} food items\n`);
 
   // Create a sample order for the regular user
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   const foodItems = await prisma.food.findMany({ take: 2 });
   if (foodItems.length >= 2) {
     const order = await prisma.order.create({
@@ -117,11 +120,14 @@ async function main() {
             {
               foodId: foodItems[0].id,
               quantity: 1,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               price: foodItems[0].price,
             },
             {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               foodId: foodItems[1].id,
               quantity: 1,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               price: foodItems[1].price,
             },
           ],

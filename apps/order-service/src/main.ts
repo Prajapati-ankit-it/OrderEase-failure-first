@@ -8,7 +8,7 @@ import {
   GlobalExceptionFilter,
   LoggingInterceptor,
 } from './common';
-import { validateEnv } from './config';
+import { validateEnv } from '@orderease/shared-config';
 
 /**
  * Parse and validate CORS origins from configuration
@@ -17,7 +17,7 @@ function parseCorsOrigins(corsOrigin: string): string | string[] {
   if (corsOrigin === '*') {
     return '*';
   }
-  return corsOrigin.split(',').map(origin => origin.trim());
+  return corsOrigin.split(',').map((origin) => origin.trim());
 }
 
 /**
