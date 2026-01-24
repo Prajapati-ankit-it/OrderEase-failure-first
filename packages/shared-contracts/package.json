@@ -2,10 +2,11 @@
   "name": "@orderease/shared-contracts",
   "version": "1.0.0",
   "description": "Shared contracts - DTOs, types, enums, interfaces, constants, and pure domain logic",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "class-validator": "^0.14.1",
