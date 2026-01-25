@@ -10,6 +10,7 @@ import { PublicModule } from './public';
 import { FoodModule } from './food';
 import { CartModule } from './cart';
 import { HealthModule } from './health';
+import { OrderModule } from './order';
 import { appConfig, databaseConfig, jwtConfig } from '@orderease/shared-config';
 import { AppLoggerService, RequestContextMiddleware } from './common';
 
@@ -30,6 +31,7 @@ import { AppLoggerService, RequestContextMiddleware } from './common';
     FoodModule,
     CartModule,
     HealthModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppLoggerService],
