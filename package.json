@@ -40,7 +40,17 @@
   "pnpm": {
     "overrides": {
       "eslint": "8.57.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "@scarf/scarf",
+      "bcrypt",
+      "core-js",
+      "core-js-pure",
+      "prisma"
+    ]
   },
   "engines": {
     "node": ">=18.0.0",
