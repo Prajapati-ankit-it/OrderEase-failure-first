@@ -1,8 +1,9 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConfig } from '@orderease/shared-config';
+import { parseJwtExpiration } from '@orderease/shared-utils';
 import { ProxyController } from './proxy.controller';
 import { ProxyService } from './proxy.service';
 import { JwtAuthMiddleware } from './middleware';
@@ -14,7 +15,22 @@ import { JwtAuthMiddleware } from './middleware';
       load: [jwtConfig],
     }),
     HttpModule,
-    JwtModule.register({}),
+    JwtModule.registerAsync({
+      useFactory: (configService: ConfigService) => {
+        const secret = configService.get<string>('jwt.secret') ?? 'default-secret';
+        const expiresIn = parseJwtExpiration(
+          configService.get<string>('jwt.expiresIn'),
+          '7d',
+        );
+        return {
+          secret,
+          signOptions: {
+            expiresIn,
+          },
+        };
+      },
+      inject: [ConfigService],
+    }),
   ],
   controllers: [ProxyController],
   providers: [ProxyService],

@@ -1,5 +1,4 @@
 import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response, NextFunction } from 'express';
 
@@ -11,10 +10,7 @@ interface JwtPayload {
 
 @Injectable()
 export class JwtAuthMiddleware implements NestMiddleware {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
 
   use(req: Request, res: Response, next: NextFunction) {
     try {
@@ -25,13 +21,14 @@ export class JwtAuthMiddleware implements NestMiddleware {
         throw new UnauthorizedException('No authorization token provided');
       }
 
-      const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+      const token = authHeader.substring(7).trim(); // Remove 'Bearer ' prefix and trim
       
-      // Verify and decode JWT token
-      const jwtSecret = this.configService.get<string>('jwt.secret');
-      const payload = this.jwtService.verify<JwtPayload>(token, {
-        secret: jwtSecret,
-      });
+      if (!token) {
+        throw new UnauthorizedException('No authorization token provided');
+      }
+      
+      // Verify and decode JWT token (using configured JwtService)
+      const payload = this.jwtService.verify<JwtPayload>(token);
 
       // Set x-user-id header for downstream services
       req.headers['x-user-id'] = payload.sub;
