@@ -42,13 +42,25 @@ export class ProxyController {
     return this.proxy(req, res, 'backend');
   }
 
-  // Route order requests to order service
+  // Route order base requests to backend
+  @All('order')
+  async orderBaseProxy(@Req() req: Request, @Res() res: Response) {
+    return this.proxy(req, res, 'backend');
+  }
+
+  // Route order nested requests to backend
   @All('order/*')
   async orderProxy(@Req() req: Request, @Res() res: Response) {
     return this.proxy(req, res, 'backend');
   }
 
-  // Route cart requests to order service
+  // Route cart base requests to backend
+  @All('cart')
+  async cartBaseProxy(@Req() req: Request, @Res() res: Response) {
+    return this.proxy(req, res, 'backend');
+  }
+
+  // Route cart nested requests to backend
   @All('cart/*')
   async cartProxy(@Req() req: Request, @Res() res: Response) {
     return this.proxy(req, res, 'backend');
