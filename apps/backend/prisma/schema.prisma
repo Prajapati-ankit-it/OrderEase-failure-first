@@ -10,13 +10,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Role enum for RBAC
+// =====================================
+// Enums
+// =====================================
+
 enum Role {
   ADMIN
   USER
 }
 
-// User model
+enum OrderEventType {
+  ORDER_REQUESTED
+  ORDER_VALIDATED
+  PAYMENT_INITIATED
+  PAYMENT_SUCCEEDED
+  PAYMENT_FAILED
+  ORDER_CONFIRMED
+  ORDER_CANCELLED
+}
+
+enum EventSource {
+  USER
+  SYSTEM
+  PAYMENT_GATEWAY
+}
+
+enum PaymentStatus {
+  INITIATED
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+// =====================================
+// User
+// =====================================
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -26,14 +55,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   orders    Order[]
   cart      Cart?
 
   @@map("users")
 }
 
-// Food model (placeholder)
+// =====================================
+// Food
+// =====================================
+
 model Food {
   id          String   @id @default(cuid())
   name        String
@@ -45,67 +76,116 @@ model Food {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
   orderItems OrderItem[]
   cartItems  CartItem[]
 
   @@map("foods")
 }
 
-// Order model (placeholder)
-model Order {
-  id           String      @id @default(cuid())
-  userId       String
-  totalPrice   Float
-  status       OrderStatus @default(PENDING)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+// =====================================
+// Order (IDENTITY + IDEMPOTENCY)
+// =====================================
 
-  // Relations
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orderItems OrderItem[]
+model Order {
+  id              String   @id @default(cuid())
+  userId          String
+  idempotencyKey  String?  @unique
+  createdAt       DateTime @default(now())
+
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
+  events    OrderEvent[]
+  payments  Payment[]
 
   @@map("orders")
 }
 
-// Order item model (placeholder)
+// =====================================
+// Order Items (SNAPSHOT)
+// =====================================
+
 model OrderItem {
-  id       String @id @default(cuid())
+  id        String   @id @default(cuid())
   orderId  String
   foodId   String
-  quantity Int
+  foodName String
   price    Float
+  quantity Int
 
-  // Relations
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  food  Food  @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  food  Food  @relation(fields: [foodId], references: [id])
 
   @@map("order_items")
 }
 
-enum OrderStatus {
-  PENDING
-  PREPARING
-  READY
-  DELIVERED
-  CANCELLED
+// =====================================
+// ORDER EVENTS (SOURCE OF TRUTH)
+// =====================================
+
+model OrderEvent {
+  id         String         @id @default(cuid())
+  orderId   String
+  type      OrderEventType
+  payload   Json
+  causedBy  EventSource
+  paymentId String?
+  createdAt DateTime       @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  payment Payment? @relation(fields: [paymentId], references: [id])
+
+  @@index([orderId, createdAt])
+  @@map("order_events")
 }
 
-// Cart model for user shopping cart
-model Cart {
-  id        String     @id @default(cuid())
-  userId    String     @unique
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+// =====================================
+// PAYMENTS
+// =====================================
 
-  // Relations
+model Payment {
+  id        String        @id @default(cuid())
+  orderId  String
+  provider String
+  amount   Float
+  status   PaymentStatus
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  order  Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  events OrderEvent[]
+
+  @@map("payments")
+}
+
+// =====================================
+// IDEMPOTENCY KEYS
+// =====================================
+
+model IdempotencyKey {
+  key         String   @id
+  requestHash String
+  response    Json
+  createdAt   DateTime @default(now())
+
+  @@map("idempotency_keys")
+}
+
+// =====================================
+// CART
+// =====================================
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   cartItems CartItem[]
 
   @@map("carts")
 }
 
-// Cart item model
 model CartItem {
   id        String   @id @default(cuid())
   cartId    String
@@ -114,7 +194,6 @@ model CartItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
   food Food @relation(fields: [foodId], references: [id], onDelete: Cascade)
 
