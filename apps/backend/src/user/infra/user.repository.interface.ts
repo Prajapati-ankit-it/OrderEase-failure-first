@@ -2,7 +2,7 @@
  * User Repository Interface
  */
 
-import { User, SafeUser } from '../domain/user.entity';
+import { User, SafeUser } from '@orderease/shared-contracts';
 
 export interface UserUpdateData {
   name?: string;
@@ -28,7 +28,10 @@ export interface IUserRepository {
   /**
    * Find all users with pagination
    */
-  findAll(page: number, limit: number): Promise<{ users: SafeUser[]; total: number }>;
+  findAll(
+    page: number,
+    limit: number,
+  ): Promise<{ users: SafeUser[]; total: number }>;
 
   /**
    * Update user

@@ -4,19 +4,28 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UpdateProfileDto, UpdatePasswordDto } from '@orderease/shared-contracts';
+import {
+  UpdateProfileDto,
+  UpdatePasswordDto,
+} from '@orderease/shared-contracts';
 import { hashPassword, comparePassword } from '@orderease/shared-utils';
 import { MESSAGES } from '@orderease/shared-contracts';
 import {
   type IUserRepository,
   USER_REPOSITORY,
 } from './infra/user.repository.interface';
+import {
+  type IOrderRepository,
+  ORDER_REPOSITORY,
+} from '../order/infra/order.repository.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject(USER_REPOSITORY)
     private userRepository: IUserRepository,
+    @Inject(ORDER_REPOSITORY)
+    private orderRepository: IOrderRepository,
   ) {}
 
   /**
@@ -82,26 +91,20 @@ export class UserService {
   }
 
   /**
-   * Get user orders
-   * NOTE: This now returns empty results. Orders should be fetched via API Gateway
-   * from the order-service at /api/order endpoint
+   * Get user's orders
    */
   async getUserOrders(userId: string, page = 1, limit = 10) {
-    // Validate user exists
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const result = await this.orderRepository.findAll(page, limit, {
+      userId,
+    });
 
-    // TODO: Call order-service via HTTP to get orders
-    // For now, return empty result to maintain API compatibility
     return {
-      orders: [],
+      orders: result.orders,
       pagination: {
-        total: 0,
+        total: result.total,
         page,
         limit,
-        totalPages: 0,
+        totalPages: Math.ceil(result.total / limit),
       },
     };
   }

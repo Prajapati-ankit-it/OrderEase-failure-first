@@ -1,4 +1,9 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   CreateOrderDto,
   CreateOrderFromCartDto,
@@ -18,22 +23,24 @@ import {
   type IOrderRepository,
   ORDER_REPOSITORY,
 } from './infra/order.repository.interface';
-import type { IFoodRepository } from 'src/food/infra/food.repository.interface';
-import type { ICartRepository } from 'src/cart/infra/cart.repository.interface';
-import { FOOD_REPOSITORY } from 'src/food/infra/food.repository.interface';
-import { CART_REPOSITORY } from 'src/cart/infra/cart.repository.interface';
+import {
+  type IFoodRepository,
+  FOOD_REPOSITORY,
+} from '../food/infra/food.repository.interface';
+import {
+  type ICartRepository,
+  CART_REPOSITORY,
+} from '../cart/infra/cart.repository.interface';
 
 @Injectable()
 export class OrderService {
   constructor(
     @Inject(ORDER_REPOSITORY)
-    private readonly orderRepository: IOrderRepository,
-
+    private orderRepository: IOrderRepository,
     @Inject(FOOD_REPOSITORY)
-    private readonly foodRepository: IFoodRepository,
-
+    private foodRepository: IFoodRepository,
     @Inject(CART_REPOSITORY)
-    private readonly cartRepository: ICartRepository,
+    private cartRepository: ICartRepository,
   ) {}
 
   /**
@@ -114,9 +121,8 @@ export class OrderService {
 
     try {
       // Get user's cart with details
-      const cartData = await this.cartRepository.findByUserIdWithDetails(
-        userId,
-      );
+      const cartData =
+        await this.cartRepository.findByUserIdWithDetails(userId);
 
       if (!cartData || cartData.cart.isEmpty()) {
         throw OrderDomainError.emptyCart();

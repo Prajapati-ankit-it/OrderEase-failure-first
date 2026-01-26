@@ -1,14 +1,13 @@
 {
-  "name": "@orderease/backend",
-  "version": "1.0.0",
-  "description": "OrderEase Backend Service - Auth, User, Admin, Food",
+  "name": "nestjs-backend",
+  "version": "0.0.1",
+  "description": "OrderEase RBAC Backend with Nest.js, Prisma, and PostgreSQL",
   "author": "TechSign",
   "private": true,
   "license": "MIT",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "dev": "nest start --watch",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -24,7 +23,7 @@
     "prisma:migrate:prod": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts",
     "prisma:studio": "prisma studio",
-    "db:setup": "pnpm prisma:generate && pnpm prisma:migrate && pnpm prisma:seed"
+    "db:setup": "npm run prisma:generate && npm run prisma:migrate && npm run prisma:seed"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -39,9 +38,8 @@
     "@nestjs/swagger": "^11.2.3",
     "@orderease/shared-config": "workspace:*",
     "@orderease/shared-contracts": "workspace:*",
-    "@orderease/shared-database": "workspace:*",
-    "@orderease/shared-logger": "workspace:*",
     "@orderease/shared-utils": "workspace:*",
+    "@orderease/shared-database": "workspace:*",
     "@prisma/client": "^6.1.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
@@ -78,7 +76,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.53.1"
   },
   "jest": {
     "moduleFileExtensions": [

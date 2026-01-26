@@ -7,7 +7,7 @@ import {
   AppLoggerService,
   GlobalExceptionFilter,
   LoggingInterceptor,
-} from './common';
+} from './gateway';
 import { validateEnv } from '@orderease/shared-config';
 
 /**
@@ -17,14 +17,17 @@ function parseCorsOrigins(corsOrigin: string): string | string[] {
   if (corsOrigin === '*') {
     return '*';
   }
-  return corsOrigin.split(',').map(origin => origin.trim());
+  return corsOrigin.split(',').map((origin) => origin.trim());
 }
 
 /**
  * Create CORS origin validator function
  */
 function createCorsOriginValidator(allowedOrigins: string | string[]) {
-  return (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+  return (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void,
+  ) => {
     // Allow requests with no origin (mobile apps, curl, postman)
     if (!origin) {
       return callback(null, true);
@@ -120,7 +123,7 @@ async function bootstrap() {
   // Enable CORS
   const corsOrigin = configService.get<string>('app.corsOrigin') || '*';
   const allowedOrigins = parseCorsOrigins(corsOrigin);
-  
+
   app.enableCors({
     origin: createCorsOriginValidator(allowedOrigins),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -139,21 +142,11 @@ async function bootstrap() {
     }),
   );
 
-  // Get instances for global interceptor and filter
-  const loggingInterceptor = new LoggingInterceptor(
-    app.get(AppLoggerService),
-    configService,
-  );
-  const exceptionFilter = new GlobalExceptionFilter(
-    app.get(AppLoggerService),
-    configService,
-  );
-
   // Global interceptors (Structured Logging)
-  app.useGlobalInterceptors(loggingInterceptor);
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Global exception filter (Structured Error Handling)
-  app.useGlobalFilters(exceptionFilter);
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Global prefix for API routes
   app.setGlobalPrefix('api');
@@ -168,8 +161,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // const port = configService.get<number>('app.port') || 3000;
-    const port = 3001;
+  const port = configService.get<number>('app.port') || 3000;
   await app.listen(port);
 
   logger.log(`OrderEase RBAC API is running on: http://localhost:${port}`);

@@ -8,7 +8,10 @@ import {
   DefaultValuePipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateProfileDto, UpdatePasswordDto } from '@orderease/shared-contracts';
+import {
+  UpdateProfileDto,
+  UpdatePasswordDto,
+} from '@orderease/shared-contracts';
 import { Auth, CurrentUser } from '../auth/decorators';
 import { MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '@orderease/shared-utils';

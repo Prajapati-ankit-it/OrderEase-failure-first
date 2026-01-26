@@ -1,0 +1,63 @@
+{
+  "id": "orderease-environment",
+  "name": "OrderEase API Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "enabled": true,
+      "type": "default",
+      "description": "Backend service base URL (direct connection)"
+    },
+    {
+      "key": "backendUrl",
+      "value": "http://localhost:3000/api",
+      "enabled": true,
+      "type": "default",
+      "description": "Backend service base URL"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "enabled": true,
+      "type": "secret",
+      "description": "User authentication token"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "enabled": true,
+      "type": "secret",
+      "description": "JWT refresh token"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "enabled": true,
+      "type": "default",
+      "description": "Current user ID"
+    },
+    {
+      "key": "foodId",
+      "value": "",
+      "enabled": true,
+      "type": "default",
+      "description": "Food item ID for testing"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "enabled": true,
+      "type": "default",
+      "description": "Order ID for testing"
+    },
+    {
+      "key": "cartItemId",
+      "value": "",
+      "enabled": true,
+      "type": "default",
+      "description": "Cart item ID for testing"
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

@@ -1,8 +1,8 @@
 // import { Test, TestingModule } from '@nestjs/testing';
-// import { NotFoundException, BadRequestException } from '@nestjs/common';
+// import { NotFoundException } from '@nestjs/common';
 // import { OrderService } from './order.service';
 // import { MESSAGES } from '@orderease/shared-contracts';
-// import { OrderStatus } from '@orderease/shared-contracts';
+// import { OrderStatus } from './dto/order.dto';
 // import { ORDER_REPOSITORY } from './infra/order.repository.interface';
 // import { FOOD_REPOSITORY } from '../food/infra/food.repository.interface';
 // import { CART_REPOSITORY } from '../cart/infra/cart.repository.interface';
@@ -103,7 +103,9 @@
 
 //       const result = await service.create('user-1', createOrderDto);
 
-//       expect(foodRepository.findAvailableByIds).toHaveBeenCalledWith(['food-1']);
+//       expect(foodRepository.findAvailableByIds).toHaveBeenCalledWith([
+//         'food-1',
+//       ]);
 //       expect(orderRepository.create).toHaveBeenCalled();
 //       expect(result).toEqual(mockOrder);
 //     });
@@ -142,7 +144,7 @@
 //         category: 'American',
 //         isAvailable: true,
 //       });
-      
+
 //       const createOrderDtoMultiple = {
 //         items: [
 //           { foodId: 'food-1', quantity: 2 },
@@ -150,8 +152,11 @@
 //         ],
 //       };
 
-//       foodRepository.findAvailableByIds.mockResolvedValue([mockFood, mockFood2]);
-      
+//       foodRepository.findAvailableByIds.mockResolvedValue([
+//         mockFood,
+//         mockFood2,
+//       ]);
+
 //       const expectedOrder = new Order({
 //         userId: 'user-1',
 //         items: [
@@ -177,7 +182,7 @@
 //           ['food-1', { name: 'Pizza', price: 15.99, isAvailable: true }],
 //         ]),
 //       };
-      
+
 //       cartRepository.findByUserIdWithDetails.mockResolvedValue(cartWithDetails);
 //       orderRepository.create.mockResolvedValue(mockOrder);
 //       cartRepository.clearCart.mockResolvedValue(undefined);
@@ -186,7 +191,9 @@
 //         clearCart: true,
 //       });
 
-//       expect(cartRepository.findByUserIdWithDetails).toHaveBeenCalledWith('user-1');
+//       expect(cartRepository.findByUserIdWithDetails).toHaveBeenCalledWith(
+//         'user-1',
+//       );
 //       expect(cartRepository.clearCart).toHaveBeenCalledWith('user-1');
 //       expect(result).toEqual(mockOrder);
 //     });
@@ -197,12 +204,12 @@
 //         userId: 'user-1',
 //         items: [],
 //       });
-      
+
 //       const cartWithDetails = {
 //         cart: emptyCart,
 //         foodDetails: new Map(),
 //       };
-      
+
 //       cartRepository.findByUserIdWithDetails.mockResolvedValue(cartWithDetails);
 
 //       await expect(service.createFromCart('user-1', {})).rejects.toThrow(
@@ -246,12 +253,12 @@
 //           ['food-1', { name: 'Pizza', price: 15.99, isAvailable: true }],
 //         ]),
 //       };
-      
+
 //       cartRepository.findByUserIdWithDetails.mockResolvedValue(cartWithDetails);
 //       orderRepository.create.mockResolvedValue(mockOrder);
 
 //       await service.createFromCart('user-1', { clearCart: false });
-      
+
 //       expect(cartRepository.clearCart).not.toHaveBeenCalled();
 //     });
 //   });
@@ -345,7 +352,10 @@
 //         status: OrderStatus.PREPARING,
 //       });
 
-//       expect(orderRepository.updateStatus).toHaveBeenCalledWith('order-1', OrderStatus.PREPARING);
+//       expect(orderRepository.updateStatus).toHaveBeenCalledWith(
+//         'order-1',
+//         OrderStatus.PREPARING,
+//       );
 //       expect(result).toEqual(updatedOrder);
 //     });
 

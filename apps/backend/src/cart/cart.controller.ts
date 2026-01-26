@@ -9,20 +9,20 @@ import {
 } from '@nestjs/common';
 import { CartService } from './cart.service';
 import { AddToCartDto, UpdateCartItemDto } from '@orderease/shared-contracts';
-import { UserId } from '../common/decorators';
+import { Auth, CurrentUser } from '../auth/decorators';
 import { successResponse } from '@orderease/shared-utils';
 
 @Controller('cart')
+@Auth() // All routes require authentication
 export class CartController {
   constructor(private cartService: CartService) {}
 
   /**
    * Get current user's cart
    * GET /cart
-   * Note: API Gateway handles authentication and sets x-user-id header
    */
   @Get()
-  async getCart(@UserId() userId: string) {
+  async getCart(@CurrentUser('id') userId: string) {
     const cart = await this.cartService.getCart(userId);
     return successResponse('Cart fetched successfully', cart);
   }
@@ -30,11 +30,10 @@ export class CartController {
   /**
    * Add item to cart
    * POST /cart
-   * Note: API Gateway handles authentication and sets x-user-id header
    */
   @Post()
   async addToCart(
-    @UserId() userId: string,
+    @CurrentUser('id') userId: string,
     @Body() addToCartDto: AddToCartDto,
   ) {
     const cart = await this.cartService.addToCart(userId, addToCartDto);
@@ -44,11 +43,10 @@ export class CartController {
   /**
    * Update cart item quantity
    * PUT /cart/:itemId
-   * Note: API Gateway handles authentication and sets x-user-id header
    */
   @Put(':itemId')
   async updateCartItem(
-    @UserId() userId: string,
+    @CurrentUser('id') userId: string,
     @Param('itemId') itemId: string,
     @Body() updateCartItemDto: UpdateCartItemDto,
   ) {
@@ -63,11 +61,10 @@ export class CartController {
   /**
    * Remove item from cart
    * DELETE /cart/:itemId
-   * Note: API Gateway handles authentication and sets x-user-id header
    */
   @Delete(':itemId')
   async removeFromCart(
-    @UserId() userId: string,
+    @CurrentUser('id') userId: string,
     @Param('itemId') itemId: string,
   ) {
     const cart = await this.cartService.removeFromCart(userId, itemId);
@@ -77,10 +74,9 @@ export class CartController {
   /**
    * Clear cart
    * DELETE /cart
-   * Note: API Gateway handles authentication and sets x-user-id header
    */
   @Delete()
-  async clearCart(@UserId() userId: string) {
+  async clearCart(@CurrentUser('id') userId: string) {
     const cart = await this.cartService.clearCart(userId);
     return successResponse('Cart cleared successfully', cart);
   }

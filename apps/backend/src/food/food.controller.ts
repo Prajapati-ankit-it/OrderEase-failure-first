@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { FoodService } from './food.service';
-import { CreateFoodDto } from '@orderease/shared-contracts';
+import { CreateFoodDto, UpdateFoodDto } from '@orderease/shared-contracts';
 import { Auth } from '../auth/decorators';
 import { Role, MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '@orderease/shared-utils';
@@ -63,8 +63,8 @@ export class FoodController {
    */
   @Put(':id')
   @Auth(Role.ADMIN)
-  async update(@Param('id') id: string) {
-    const food = await this.foodService.update(id);
+  async update(@Param('id') id: string, @Body() updateFoodDto: UpdateFoodDto) {
+    const food = await this.foodService.update(id, updateFoodDto);
     return successResponse('Food item updated successfully', food);
   }
 

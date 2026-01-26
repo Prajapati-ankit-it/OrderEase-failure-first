@@ -8,20 +8,23 @@ import { AdminModule } from './admin';
 import { UserModule } from './user';
 import { PublicModule } from './public';
 import { FoodModule } from './food';
+import { OrderModule } from './order';
 import { CartModule } from './cart';
 import { HealthModule } from './health';
-import { OrderModule } from './order';
 import { appConfig, databaseConfig, jwtConfig } from '@orderease/shared-config';
-import { AppLoggerService, RequestContextMiddleware } from './common';
+import {
+  AppLoggerService,
+  RequestContextMiddleware,
+} from './gateway';
 
 @Module({
   imports: [
-    // Load environment configuration from shared-config
+    // Load environment configuration
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, databaseConfig, jwtConfig],
     }),
-    // Database module from shared-database (Prisma)
+    // Database module (Prisma)
     DatabaseModule,
     // Feature modules
     AuthModule,
@@ -30,8 +33,8 @@ import { AppLoggerService, RequestContextMiddleware } from './common';
     PublicModule,
     FoodModule,
     CartModule,
-    HealthModule,
     OrderModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppLoggerService],

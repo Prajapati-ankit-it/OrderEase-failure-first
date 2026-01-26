@@ -1,38 +1,43 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import {
-  UpdateUserRoleDto,
-  AdminUpdateUserDto,
-} from '@orderease/shared-contracts';
+import { UpdateUserRoleDto, AdminUpdateUserDto } from '@orderease/shared-contracts';
 import { MESSAGES } from '@orderease/shared-contracts';
 import {
   type IUserRepository,
   USER_REPOSITORY,
 } from '../user/infra/user.repository.interface';
+import {
+  type IOrderRepository,
+  ORDER_REPOSITORY,
+} from '../order/infra/order.repository.interface';
 
 @Injectable()
 export class AdminService {
   constructor(
     @Inject(USER_REPOSITORY)
     private userRepository: IUserRepository,
+    @Inject(ORDER_REPOSITORY)
+    private orderRepository: IOrderRepository,
   ) {}
 
   /**
    * Get dashboard statistics
-   * NOTE: Order statistics should be fetched from order-service via API Gateway
    */
   async getDashboard() {
-    const [totalUsers, totalAdmins] = await Promise.all([
-      this.userRepository.count(),
-      this.userRepository.count({ role: 'ADMIN' }),
-    ]);
+    const [totalUsers, totalAdmins, totalOrders, recentOrdersResult] =
+      await Promise.all([
+        this.userRepository.count(),
+        this.userRepository.count({ role: 'ADMIN' }),
+        this.orderRepository.findAll(1, 1, {}).then((r) => r.total),
+        this.orderRepository.findAll(1, 5, {}),
+      ]);
 
     return {
       statistics: {
         totalUsers,
         totalAdmins,
-        totalOrders: 0, // TODO: Fetch from order-service
+        totalOrders,
       },
-      recentOrders: [], // TODO: Fetch from order-service
+      recentOrders: recentOrdersResult.orders,
     };
   }
 
@@ -55,7 +60,6 @@ export class AdminService {
 
   /**
    * Get user by ID
-   * NOTE: User orders should be fetched separately from order-service
    */
   async getUserById(id: string) {
     const user = await this.userRepository.findById(id);
@@ -64,10 +68,14 @@ export class AdminService {
       throw new NotFoundException(MESSAGES.USER.NOT_FOUND);
     }
 
-    // TODO: Fetch orders from order-service via HTTP
+    // Get recent orders for the user
+    const ordersResult = await this.orderRepository.findAll(1, 5, {
+      userId: id,
+    });
+
     return {
       ...user.toSafeUser(),
-      orders: [], // Placeholder - fetch from order-service
+      orders: ordersResult.orders,
     };
   }
 

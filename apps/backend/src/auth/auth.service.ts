@@ -17,9 +17,7 @@ import {
   type IUserRepository,
   USER_REPOSITORY,
 } from '../user/infra/user.repository.interface';
-// Remove User import from shared-contracts and import from backend domain
-import { UserRole } from '@orderease/shared-contracts';
-import { User } from '../user/domain/user.entity';
+import { User, UserRole } from '@orderease/shared-contracts';
 
 @Injectable()
 export class AuthService {
@@ -46,7 +44,7 @@ export class AuthService {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user domain object using backend domain entity
+    // Create user domain object
     const user = new User({
       email,
       password: hashedPassword,

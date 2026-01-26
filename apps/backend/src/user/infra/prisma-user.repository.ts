@@ -4,7 +4,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
-import { User, UserRole, SafeUser } from '../domain/user.entity';
+import { User, UserRole, SafeUser } from '@orderease/shared-contracts';
 import { IUserRepository, UserUpdateData } from './user.repository.interface';
 import { Role as PrismaRole } from '@prisma/client';
 
@@ -113,17 +113,15 @@ export class PrismaUserRepository implements IUserRepository {
     return this.prisma.user.count({ where: prismaWhere });
   }
 
-  private toDomain(
-    prismaUser: {
-      id: string;
-      email: string;
-      password: string;
-      name: string | null;
-      role: PrismaRole;
-      createdAt: Date;
-      updatedAt: Date;
-    },
-  ): User {
+  private toDomain(prismaUser: {
+    id: string;
+    email: string;
+    password: string;
+    name: string | null;
+    role: PrismaRole;
+    createdAt: Date;
+    updatedAt: Date;
+  }): User {
     return new User({
       id: prismaUser.id,
       email: prismaUser.email,
@@ -135,16 +133,14 @@ export class PrismaUserRepository implements IUserRepository {
     });
   }
 
-  private toSafeUser(
-    prismaUser: {
-      id: string;
-      email: string;
-      name: string | null;
-      role: PrismaRole;
-      createdAt: Date;
-      updatedAt: Date;
-    },
-  ): SafeUser {
+  private toSafeUser(prismaUser: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: PrismaRole;
+    createdAt: Date;
+    updatedAt: Date;
+  }): SafeUser {
     return {
       id: prismaUser.id,
       email: prismaUser.email,
