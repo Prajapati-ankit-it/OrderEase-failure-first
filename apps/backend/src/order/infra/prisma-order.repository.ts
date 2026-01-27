@@ -7,6 +7,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
 import { OrderEventType, EventSource } from '@prisma/client';
 import { IOrderRepository } from './order.repository.interface';
+import {deriveOrderState, assertValidTransition, OrderState} from '../domain';
 
 @Injectable()
 export class PrismaOrderRepository implements IOrderRepository {
@@ -16,7 +17,7 @@ export class PrismaOrderRepository implements IOrderRepository {
    * Checkout - Convert user's cart into an order
    * This is an idempotent, event-driven, snapshot-based checkout function
    */
-  async checkout(userId: string, idempotencyKey: string): Promise<string> {
+    async checkout(userId: string, idempotencyKey: string): Promise<string> {
     return await this.prisma.$transaction(async (tx) => {
       // ===============================
       // Step 1: Idempotency Guard
@@ -94,7 +95,29 @@ export class PrismaOrderRepository implements IOrderRepository {
       });
 
       // ===============================
-      // Step 5: Event Logging
+      // Step 5: Order State Machine Validation
+      // ===============================
+      // New order has no events yet → INIT state
+      let currentState: OrderState = OrderState.INIT;
+
+      // Validate INIT → ORDER_REQUESTED
+      assertValidTransition(
+        currentState,
+        OrderEventType.ORDER_REQUESTED,
+      );
+
+      currentState = deriveOrderState([
+        { type: OrderEventType.ORDER_REQUESTED },
+      ]);
+
+      // Validate REQUESTED → ORDER_VALIDATED
+      assertValidTransition(
+        currentState,
+        OrderEventType.ORDER_VALIDATED,
+      );
+
+      // ===============================
+      // Step 6: Event Logging
       // ===============================
       await tx.orderEvent.createMany({
         data: [
@@ -120,12 +143,12 @@ export class PrismaOrderRepository implements IOrderRepository {
       });
 
       // ===============================
-      // Step 6: Persist Idempotency Result
+      // Step 7: Persist Idempotency Result
       // ===============================
       await tx.idempotencyKey.create({
         data: {
           key: idempotencyKey,
-          requestHash: `${userId}:${cart.id}`, // simple deterministic hash
+          requestHash: `${userId}:${cart.id}`,
           response: {
             orderId: order.id,
           },
@@ -133,7 +156,7 @@ export class PrismaOrderRepository implements IOrderRepository {
       });
 
       // ===============================
-      // Step 7: Cleanup
+      // Step 8: Cleanup
       // ===============================
       await tx.cartItem.deleteMany({
         where: { cartId: cart.id },
