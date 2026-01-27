@@ -59,7 +59,7 @@ export class PrismaFoodRepository implements IFoodRepository {
 
   async findAll(
     category?: string,
-    includeUnavailable = false,
+    includeUnavailable?: boolean,
   ): Promise<Food[]> {
     const where: { category?: string; isAvailable?: boolean } = {};
 
@@ -67,7 +67,7 @@ export class PrismaFoodRepository implements IFoodRepository {
       where.category = category;
     }
 
-    if (!includeUnavailable) {
+    if (includeUnavailable === false) {
       where.isAvailable = true;
     }
 
@@ -79,25 +79,16 @@ export class PrismaFoodRepository implements IFoodRepository {
     return prismaFoods.map((pf) => this.toDomain(pf));
   }
 
-  async update(id: string, data: FoodUpdateData): Promise<Food> {
-    const updateData: Record<string, unknown> = {};
+async update(id: string, data: FoodUpdateData): Promise<Food> {
+  const prismaFood = await this.prisma.food.update({
+    where: { id },
+    data: Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined),
+    ),
+  });
 
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined)
-      updateData.description = data.description;
-    if (data.price !== undefined) updateData.price = data.price;
-    if (data.category !== undefined) updateData.category = data.category;
-    if (data.image !== undefined) updateData.image = data.image;
-    if (data.isAvailable !== undefined)
-      updateData.isAvailable = data.isAvailable;
-
-    const prismaFood = await this.prisma.food.update({
-      where: { id },
-      data: updateData,
-    });
-
-    return this.toDomain(prismaFood);
-  }
+  return this.toDomain(prismaFood);
+}
 
   async delete(id: string): Promise<void> {
     await this.prisma.food.delete({

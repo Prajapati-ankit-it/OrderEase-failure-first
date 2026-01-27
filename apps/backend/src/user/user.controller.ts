@@ -64,13 +64,13 @@ export class UserController {
    * Get current user's orders
    * GET /user/orders
    */
-  @Get('orders')
-  async getUserOrders(
-    @CurrentUser('id') userId: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
-  ) {
-    const result = await this.userService.getUserOrders(userId, page, limit);
-    return successResponse(MESSAGES.GENERAL.SUCCESS, result);
-  }
+  // @Get('orders')
+  // async getUserOrders(
+  //   @CurrentUser('id') userId: string,
+  //   @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+  //   @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  // ) {
+  //   const result = await this.userService.getUserOrders(userId, page, limit);
+  //   return successResponse(MESSAGES.GENERAL.SUCCESS, result);
+  // }
 }

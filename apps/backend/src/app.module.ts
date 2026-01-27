@@ -6,10 +6,10 @@ import { DatabaseModule } from '@orderease/shared-database';
 import { AuthModule } from './auth';
 import { AdminModule } from './admin';
 import { UserModule } from './user';
-import { PublicModule } from './public';
+// import { PublicModule } from './public';
 import { FoodModule } from './food';
-import { OrderModule } from './order';
-import { CartModule } from './cart';
+// import { OrderModule } from './order';
+// import { CartModule } from './cart';
 import { HealthModule } from './health';
 import { appConfig, databaseConfig, jwtConfig } from '@orderease/shared-config';
 import {
@@ -30,10 +30,10 @@ import {
     AuthModule,
     AdminModule,
     UserModule,
-    PublicModule,
+    // PublicModule,
     FoodModule,
-    CartModule,
-    OrderModule,
+    // CartModule,
+    // OrderModule,
     HealthModule,
   ],
   controllers: [AppController],

@@ -14,18 +14,18 @@ import {
   type IUserRepository,
   USER_REPOSITORY,
 } from './infra/user.repository.interface';
-import {
-  type IOrderRepository,
-  ORDER_REPOSITORY,
-} from '../order/infra/order.repository.interface';
+// import {
+//   type IOrderRepository,
+//   ORDER_REPOSITORY,
+// } from '../order/infra/order.repository.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject(USER_REPOSITORY)
     private userRepository: IUserRepository,
-    @Inject(ORDER_REPOSITORY)
-    private orderRepository: IOrderRepository,
+    // @Inject(ORDER_REPOSITORY)
+    // private orderRepository: IOrderRepository,
   ) {}
 
   /**
@@ -93,19 +93,19 @@ export class UserService {
   /**
    * Get user's orders
    */
-  async getUserOrders(userId: string, page = 1, limit = 10) {
-    const result = await this.orderRepository.findAll(page, limit, {
-      userId,
-    });
+  // async getUserOrders(userId: string, page = 1, limit = 10) {
+  //   const result = await this.orderRepository.findAll(page, limit, {
+  //     userId,
+  //   });
 
-    return {
-      orders: result.orders,
-      pagination: {
-        total: result.total,
-        page,
-        limit,
-        totalPages: Math.ceil(result.total / limit),
-      },
-    };
-  }
+  //   return {
+  //     orders: result.orders,
+  //     pagination: {
+  //       total: result.total,
+  //       page,
+  //       limit,
+  //       totalPages: Math.ceil(result.total / limit),
+  //     },
+  //   };
+  // }
 }

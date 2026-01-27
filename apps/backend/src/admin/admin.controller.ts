@@ -26,10 +26,10 @@ export class AdminController {
    */
   @Get('dashboard')
   async getDashboard(@CurrentUser() user: { id: string; role: string }) {
-    const result = await this.adminService.getDashboard();
+    // const result = await this.adminService.getDashboard();
     return successResponse(MESSAGES.ADMIN.DASHBOARD_ACCESS, {
       admin: user,
-      ...result,
+      // ...result,
     });
   }
 
