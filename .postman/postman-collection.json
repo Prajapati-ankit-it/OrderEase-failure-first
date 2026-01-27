@@ -165,7 +165,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"ankitprajapti@gmail.com\",\n  \"password\": \"ankit@123\"\n}",
+              "raw": "{\n  \"email\": \"ankitprajapti10027@gmail.com\",\n  \"password\": \"ankit@123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -533,7 +533,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"foodId\": \"{{foodId}}\",\n  \"quantity\": 2\n}",
+              "raw": "{\n  \"foodId\": \"{{foodId}}\",\n  \"quantity\": 5\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -588,13 +588,28 @@
             {
               "listen": "test",
               "script": {
+                "id": "e5b67544-1333-4106-991e-38fa7e2b669b",
                 "exec": [
                   "const response = pm.response.json();",
                   "if (response.data && response.data.id) {",
                   "    pm.environment.set('orderId', response.data.id);",
                   "}"
                 ],
-                "type": "text/javascript"
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "5a609d54-6e2e-434b-a5df-958570fe373e",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -610,7 +625,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"items\": [\n    {\n      \"foodId\": \"{{foodId}}\",\n      \"quantity\": 2\n    }\n  ]\n}",
+              "raw": "{\n    \"idempotencyKey\": \"ankitTesting123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -618,12 +633,13 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/order",
+              "raw": "{{baseUrl}}/order/checkout",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "order"
+                "order",
+                "checkout"
               ]
             }
           },
