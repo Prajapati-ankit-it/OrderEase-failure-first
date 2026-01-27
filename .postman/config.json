@@ -4,14 +4,14 @@
   },
   "entities": {
     "environments": [
-      "..\\postman-environment.json"
+      ".\\postman-environment.json"
     ],
     "flows": [],
     "globals": [],
     "mocks": [],
     "specs": [],
     "collections": [
-      "..\\postman-collection.json"
+      ".\\postman-collection.json"
     ]
   }
 }

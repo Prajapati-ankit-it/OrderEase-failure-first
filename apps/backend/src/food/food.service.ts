@@ -33,7 +33,7 @@ export class FoodService {
   /**
    * Get all food items
    */
-  async findAll(category?: string, includeUnavailable = false) {
+  async findAll(category?: string, includeUnavailable?: boolean) {
     return this.foodRepository.findAll(category, includeUnavailable);
   }
 

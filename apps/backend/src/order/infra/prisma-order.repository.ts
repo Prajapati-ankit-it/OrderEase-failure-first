@@ -3,156 +3,166 @@
  * Infrastructure layer - contains Prisma-specific code
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
-import { Order, OrderStatus, OrderItem } from '../domain/order.entity';
-import {
-  IOrderRepository,
-  OrderListFilter,
-  OrderListResult,
-} from './order.repository.interface';
-import { OrderStatus as PrismaOrderStatus } from '@prisma/client';
+import { OrderEventType, EventSource } from '@prisma/client';
+import { IOrderRepository } from './order.repository.interface';
+import {deriveOrderState, assertValidTransition, OrderState} from '../domain';
 
 @Injectable()
 export class PrismaOrderRepository implements IOrderRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
-   * Create a new order
+   * Checkout - Convert user's cart into an order
+   * This is an idempotent, event-driven, snapshot-based checkout function
    */
-  async create(order: Order): Promise<Order> {
-    const totalPrice = order.calculateTotal();
+    async checkout(userId: string, idempotencyKey: string): Promise<string> {
+    return await this.prisma.$transaction(async (tx) => {
+      // ===============================
+      // Step 1: Idempotency Guard
+      // ===============================
+      const existingIdempotency = await tx.idempotencyKey.findUnique({
+        where: { key: idempotencyKey },
+      });
 
-    const prismaOrder = await this.prisma.order.create({
-      data: {
-        userId: order.userId,
-        totalPrice,
-        status: order.status as PrismaOrderStatus,
-        orderItems: {
-          create: order.items.map((item) => ({
-            foodId: item.foodId,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        },
-      },
-      include: {
-        orderItems: true,
-      },
-    });
+      if (existingIdempotency) {
+        return (existingIdempotency.response as { orderId: string }).orderId;
+      }
 
-    return this.toDomain(prismaOrder);
-  }
-
-  /**
-   * Find order by ID
-   */
-  async findById(id: string): Promise<Order | null> {
-    const prismaOrder = await this.prisma.order.findUnique({
-      where: { id },
-      include: {
-        orderItems: true,
-      },
-    });
-
-    if (!prismaOrder) {
-      return null;
-    }
-
-    return this.toDomain(prismaOrder);
-  }
-
-  /**
-   * Find orders with pagination and filters
-   */
-  async findAll(
-    page: number,
-    limit: number,
-    filter?: OrderListFilter,
-  ): Promise<OrderListResult> {
-    const skip = (page - 1) * limit;
-    const where: { status?: PrismaOrderStatus; userId?: string } = {};
-
-    if (filter?.status) {
-      where.status = filter.status as PrismaOrderStatus;
-    }
-
-    if (filter?.userId) {
-      where.userId = filter.userId;
-    }
-
-    const [prismaOrders, total] = await Promise.all([
-      this.prisma.order.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
+      // ===============================
+      // Step 2: Cart Validation
+      // ===============================
+      const cart = await tx.cart.findUnique({
+        where: { userId },
         include: {
-          orderItems: true,
+          cartItems: {
+            include: {
+              food: true,
+            },
+          },
         },
-      }),
-      this.prisma.order.count({ where }),
-    ]);
+      });
 
-    const orders = prismaOrders.map((po) => this.toDomain(po));
+      if (!cart || cart.cartItems.length === 0) {
+        throw new BadRequestException('Cart is empty');
+      }
 
-    return { orders, total };
-  }
+      const unavailableFoods = cart.cartItems.filter(
+        (item) => !item.food.isAvailable,
+      );
 
-  /**
-   * Update order status
-   */
-  async updateStatus(id: string, status: string): Promise<Order> {
-    const prismaOrder = await this.prisma.order.update({
-      where: { id },
-      data: { status: status as PrismaOrderStatus },
-      include: {
-        orderItems: true,
-      },
-    });
+      if (unavailableFoods.length > 0) {
+        throw new BadRequestException(
+          `Some food items are not available: ${unavailableFoods
+            .map((item) => item.food.name)
+            .join(', ')}`,
+        );
+      }
 
-    return this.toDomain(prismaOrder);
-  }
+      // ===============================
+      // Step 3: Order Creation (identity only)
+      // ===============================
+      const order = await tx.order.create({
+        data: {
+          userId,
+          idempotencyKey,
+        },
+      });
 
-  /**
-   * Delete order by ID
-   */
-  async delete(id: string): Promise<void> {
-    await this.prisma.order.delete({
-      where: { id },
-    });
-  }
+      // ===============================
+      // Step 4: Snapshot OrderItems
+      // ===============================
+      let totalPrice = 0;
+      let totalItemCount = 0;
 
-  /**
-   * Map Prisma model to Domain entity
-   * This is where we isolate Prisma from domain
-   */
-  private toDomain(prismaOrder: {
-    id: string;
-    userId: string;
-    totalPrice: number;
-    status: PrismaOrderStatus;
-    createdAt: Date;
-    updatedAt: Date;
-    orderItems: Array<{
-      foodId: string;
-      quantity: number;
-      price: number;
-    }>;
-  }): Order {
-    const items: OrderItem[] = prismaOrder.orderItems.map((item) => ({
-      foodId: item.foodId,
-      quantity: item.quantity,
-      price: item.price,
-    }));
+      const orderItemsData = cart.cartItems.map((cartItem) => {
+        const itemTotal = cartItem.food.price * cartItem.quantity;
+        totalPrice += itemTotal;
+        totalItemCount += cartItem.quantity;
 
-    return new Order({
-      id: prismaOrder.id,
-      userId: prismaOrder.userId,
-      items,
-      status: prismaOrder.status as OrderStatus,
-      createdAt: prismaOrder.createdAt,
-      updatedAt: prismaOrder.updatedAt,
+        return {
+          orderId: order.id,
+          foodId: cartItem.foodId,
+          foodName: cartItem.food.name,
+          price: cartItem.food.price,
+          quantity: cartItem.quantity,
+        };
+      });
+
+      await tx.orderItem.createMany({
+        data: orderItemsData,
+      });
+
+      // ===============================
+      // Step 5: Order State Machine Validation
+      // ===============================
+      // New order has no events yet → INIT state
+      let currentState: OrderState = OrderState.INIT;
+
+      // Validate INIT → ORDER_REQUESTED
+      assertValidTransition(
+        currentState,
+        OrderEventType.ORDER_REQUESTED,
+      );
+
+      currentState = deriveOrderState([
+        { type: OrderEventType.ORDER_REQUESTED },
+      ]);
+
+      // Validate REQUESTED → ORDER_VALIDATED
+      assertValidTransition(
+        currentState,
+        OrderEventType.ORDER_VALIDATED,
+      );
+
+      // ===============================
+      // Step 6: Event Logging
+      // ===============================
+      await tx.orderEvent.createMany({
+        data: [
+          {
+            orderId: order.id,
+            type: OrderEventType.ORDER_REQUESTED,
+            causedBy: EventSource.USER,
+            payload: {
+              totalPrice,
+              totalItemCount,
+            },
+          },
+          {
+            orderId: order.id,
+            type: OrderEventType.ORDER_VALIDATED,
+            causedBy: EventSource.SYSTEM,
+            payload: {
+              totalPrice,
+              totalItemCount,
+            },
+          },
+        ],
+      });
+
+      // ===============================
+      // Step 7: Persist Idempotency Result
+      // ===============================
+      await tx.idempotencyKey.create({
+        data: {
+          key: idempotencyKey,
+          requestHash: `${userId}:${cart.id}`,
+          response: {
+            orderId: order.id,
+          },
+        },
+      });
+
+      // ===============================
+      // Step 8: Cleanup
+      // ===============================
+      await tx.cartItem.deleteMany({
+        where: { cartId: cart.id },
+      });
+
+      return order.id;
     });
   }
 }

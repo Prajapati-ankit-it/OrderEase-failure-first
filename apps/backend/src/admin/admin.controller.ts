@@ -10,7 +10,10 @@ import {
   DefaultValuePipe,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { UpdateUserRoleDto, AdminUpdateUserDto } from '@orderease/shared-contracts';
+import {
+  UpdateUserRoleDto,
+  AdminUpdateUserDto,
+} from '@orderease/shared-contracts';
 import { Auth, CurrentUser } from '../auth/decorators';
 import { Role, MESSAGES } from '@orderease/shared-contracts';
 import { successResponse } from '@orderease/shared-utils';
@@ -26,10 +29,10 @@ export class AdminController {
    */
   @Get('dashboard')
   async getDashboard(@CurrentUser() user: { id: string; role: string }) {
-    const result = await this.adminService.getDashboard();
+    // const result = await this.adminService.getDashboard();
     return successResponse(MESSAGES.ADMIN.DASHBOARD_ACCESS, {
       admin: user,
-      ...result,
+      // ...result,
     });
   }
 

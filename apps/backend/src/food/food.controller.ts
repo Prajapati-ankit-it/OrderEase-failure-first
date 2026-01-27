@@ -37,12 +37,9 @@ export class FoodController {
   @Auth(Role.ADMIN)
   async findAll(
     @Query('category') category?: string,
-    @Query('includeUnavailable') includeUnavailable?: string,
+    @Query('includeUnavailable') includeUnavailable: boolean = true,
   ) {
-    const foods = await this.foodService.findAll(
-      category,
-      includeUnavailable === 'true',
-    );
+    const foods = await this.foodService.findAll(category, includeUnavailable);
     return successResponse(MESSAGES.GENERAL.SUCCESS, foods);
   }
 

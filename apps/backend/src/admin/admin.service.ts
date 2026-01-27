@@ -1,45 +1,50 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { UpdateUserRoleDto, AdminUpdateUserDto } from '@orderease/shared-contracts';
+import {
+  UpdateUserRoleDto,
+  AdminUpdateUserDto,
+} from '@orderease/shared-contracts';
 import { MESSAGES } from '@orderease/shared-contracts';
 import {
   type IUserRepository,
   USER_REPOSITORY,
 } from '../user/infra/user.repository.interface';
-import {
-  type IOrderRepository,
-  ORDER_REPOSITORY,
-} from '../order/infra/order.repository.interface';
+// import {
+//   type IOrderRepository,
+//   ORDER_REPOSITORY,
+// } from '../order/infra/order.repository.interface';
 
 @Injectable()
 export class AdminService {
   constructor(
     @Inject(USER_REPOSITORY)
     private userRepository: IUserRepository,
-    @Inject(ORDER_REPOSITORY)
-    private orderRepository: IOrderRepository,
+    // @Inject(ORDER_REPOSITORY)
+    // private orderRepository: IOrderRepository,
   ) {}
 
   /**
    * Get dashboard statistics
    */
-  async getDashboard() {
-    const [totalUsers, totalAdmins, totalOrders, recentOrdersResult] =
-      await Promise.all([
-        this.userRepository.count(),
-        this.userRepository.count({ role: 'ADMIN' }),
-        this.orderRepository.findAll(1, 1, {}).then((r) => r.total),
-        this.orderRepository.findAll(1, 5, {}),
-      ]);
+  // async getDashboard() {
+  //   const [totalUsers, totalAdmins,
+  //     // totalOrders, recentOrdersResult
+  //   ] =
+  //     await Promise.all([
+  //       this.userRepository.count(),
+  //       this.userRepository.count({ role: 'ADMIN' }),
+  //       // this.orderRepository.findAll(1, 1, {}).then((r) => r.total),
+  //       // this.orderRepository.findAll(1, 5, {}),
+  //     ]);
 
-    return {
-      statistics: {
-        totalUsers,
-        totalAdmins,
-        totalOrders,
-      },
-      recentOrders: recentOrdersResult.orders,
-    };
-  }
+  //   return {
+  //     statistics: {
+  //       totalUsers,
+  //       totalAdmins,
+  //       totalOrders,
+  //     },
+  //     recentOrders: recentOrdersResult.orders,
+  //   };
+  // }
 
   /**
    * Get all users
@@ -69,13 +74,13 @@ export class AdminService {
     }
 
     // Get recent orders for the user
-    const ordersResult = await this.orderRepository.findAll(1, 5, {
-      userId: id,
-    });
+    // const ordersResult = await this.orderRepository.findAll(1, 5, {
+    //   userId: id,
+    // });
 
     return {
       ...user.toSafeUser(),
-      orders: ordersResult.orders,
+      // orders: ordersResult.orders,
     };
   }
 

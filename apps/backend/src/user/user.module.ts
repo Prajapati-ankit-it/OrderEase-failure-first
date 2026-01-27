@@ -3,10 +3,10 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { PrismaUserRepository } from './infra/prisma-user.repository';
 import { USER_REPOSITORY } from './infra/user.repository.interface';
-import { OrderModule } from '../order/order.module';
+// import { OrderModule } from '../order/order.module';
 
 @Module({
-  imports: [OrderModule],
+  // imports: [OrderModule],
   controllers: [UserController],
   providers: [
     UserService,

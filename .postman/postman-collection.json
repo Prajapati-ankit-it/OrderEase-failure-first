@@ -106,7 +106,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"ankitprajapti10027+1@gmail.com\",\n  \"password\": \"ankit@123\",\n  \"name\": \"Admin User\",\n  \"role\": \"ADMIN\"\n}",
+              "raw": "{\n  \"email\": \"ankitprajapti@gmail.com\",\n  \"password\": \"ankit@123\",\n  \"name\": \"Admin User\",\n  \"role\": \"ADMIN\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -223,7 +223,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"ankitprajapti10027+1@gmail.com\",\n  \"password\": \"ankit@123\"\n}",
+              "raw": "{\n  \"email\": \"admin@orderease.com\",\n  \"password\": \"admin123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -400,7 +400,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated User Name\",\n  \"email\": \"user@example.com\"\n}",
+              "raw": "{\n  \"name\": \"Updated User Name\",\n  \"email\": \"ankitprajapti@gmail.com\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -533,7 +533,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"foodId\": \"{{foodId}}\",\n  \"quantity\": 2\n}",
+              "raw": "{\n  \"foodId\": \"{{foodId}}\",\n  \"quantity\": 5\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -588,13 +588,28 @@
             {
               "listen": "test",
               "script": {
+                "id": "e5b67544-1333-4106-991e-38fa7e2b669b",
                 "exec": [
                   "const response = pm.response.json();",
                   "if (response.data && response.data.id) {",
                   "    pm.environment.set('orderId', response.data.id);",
                   "}"
                 ],
-                "type": "text/javascript"
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "5a609d54-6e2e-434b-a5df-958570fe373e",
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
               }
             }
           ],
@@ -610,7 +625,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"items\": [\n    {\n      \"foodId\": \"{{foodId}}\",\n      \"quantity\": 2\n    }\n  ]\n}",
+              "raw": "{\n    \"idempotencyKey\": \"ankitTesting123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -618,12 +633,13 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/order",
+              "raw": "{{baseUrl}}/order/checkout",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "order"
+                "order",
+                "checkout"
               ]
             }
           },
@@ -804,13 +820,13 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{adminToken}}",
+                "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbWt2c2ducGMwMDAwdmRkb2xoaHI0enFxIiwiZW1haWwiOiJhZG1pbkBvcmRlcmVhc2UuY29tIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzY5NTA4Mzk4LCJleHAiOjE3NzAxMTMxOTh9.3aPMQkWXVyEi4Yd91YiL9Ny2EuXqUjARCLRIK9Na_n8",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Test Burger\",\n  \"description\": \"Delicious test burger\",\n  \"price\": 12.99,\n  \"category\": \"Main Course\",\n  \"image\": \"https://example.com/burger.jpg\",\n  \"isAvailable\": true\n}",
+              "raw": "{\n    \"name\": \"Test Burger\",\n    \"description\": \"Delicious test burger\",\n    \"price\": 12.99,\n    \"category\": \"Main Course\",\n    \"image\": \"https://example.com/burger.jpg\",\n    \"isAvailable\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -852,7 +868,8 @@
               "query": [
                 {
                   "key": "includeUnavailable",
-                  "value": "true"
+                  "value": "true",
+                  "uuid": "b7ca65e3-e927-41ee-a3de-0b9a533a8134"
                 }
               ]
             }
@@ -911,46 +928,55 @@
     {
       "listen": "prerequest",
       "script": {
+        "id": "ef1ccaaa-cd4a-4995-9854-689ec72ca4a1",
+        "type": "text/javascript",
+        "requests": {},
         "exec": [
           "// Global pre-request script",
           "if (!pm.environment.get('baseUrl')) {",
           "    pm.environment.set('baseUrl', 'http://localhost:4000/api');",
           "}"
-        ],
-        "type": "text/javascript"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "id": "5a06d050-cab3-4646-9375-c367abcaf88c",
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
       }
     }
   ],
   "variable": [
     {
-      "id": "9dac5f2d-b9bb-4104-9acc-ca339a3012a8",
+      "id": "a426ac26-df81-411a-8ab2-1fe8e84ac988",
       "key": "authToken",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
-      "id": "dcd6203c-da2c-48a3-8d9b-6adc93bd0a10",
+      "id": "5fcda119-48f5-41d7-95ca-e80e112864a1",
       "key": "adminToken",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
-      "id": "40eafbe3-35a5-46f4-9f46-b3e88c40024f",
+      "id": "65d3b902-7d79-441c-b4a5-b94f0e327a93",
       "key": "userId",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
-      "id": "07d65c6b-dd80-43ee-926b-0645ddf17b3e",
+      "id": "7f093ee8-e3dd-4e9b-a1ad-a7434a65f9b6",
       "key": "foodId",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
-      "id": "586e691f-90d6-490d-8f26-0ec5c70b39b3",
+      "id": "e6bdbeda-ba89-481a-8c62-7b3721e5d625",
       "key": "orderId",
-      "value": "",
-      "type": "string"
+      "value": ""
     }
   ]
 }

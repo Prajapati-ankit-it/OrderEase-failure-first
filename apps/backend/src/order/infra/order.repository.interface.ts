@@ -4,47 +4,17 @@
  * Domain layer can depend on this interface without knowing about Prisma
  */
 
-import { Order } from '../domain/order.entity';
-
-export interface OrderListFilter {
-  status?: string;
-  userId?: string;
-}
-
-export interface OrderListResult {
-  orders: Order[];
-  total: number;
-}
-
 export interface IOrderRepository {
   /**
-   * Create a new order
+   * Checkout - Convert user's cart into an order
+   * This is an idempotent, event-driven, snapshot-based checkout function
+   *
+   * @param userId - The ID of the user checking out
+   * @param idempotencyKey - Unique key to ensure idempotency
+   * @returns The order ID (existing or newly created)
+   * @throws BadRequestException if cart is empty or food items are unavailable
    */
-  create(order: Order): Promise<Order>;
-
-  /**
-   * Find order by ID
-   */
-  findById(id: string): Promise<Order | null>;
-
-  /**
-   * Find orders with pagination and filters
-   */
-  findAll(
-    page: number,
-    limit: number,
-    filter?: OrderListFilter,
-  ): Promise<OrderListResult>;
-
-  /**
-   * Update order status
-   */
-  updateStatus(id: string, status: string): Promise<Order>;
-
-  /**
-   * Delete order by ID
-   */
-  delete(id: string): Promise<void>;
+  checkout(userId: string, idempotencyKey: string): Promise<string>;
 }
 
 export const ORDER_REPOSITORY = Symbol('IOrderRepository');
