@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { IOrderRepository } from '../infra/order.repository.interface';
 import { ORDER_REPOSITORY } from '../infra/order.repository.interface';
 import { PaymentOrchestratorService } from './payment-orchestrator.service';
-
+import { FakePaymentGateway } from '../infra/fake-payment.gateway';
 @Injectable()
 export class OrderApplicationService {
     
@@ -10,6 +10,7 @@ export class OrderApplicationService {
     @Inject(ORDER_REPOSITORY)
     private orderRepository: IOrderRepository,
     private readonly paymentOrchestrator: PaymentOrchestratorService,
+    private readonly fakePaymentGateway: FakePaymentGateway,
   ) {}
 
   async checkout(userId: string, idempotencyKey: string): Promise<string> {
@@ -20,8 +21,8 @@ export class OrderApplicationService {
     );
 
     // PHASE 2: Trigger next step AFTER COMMIT
-    await this.paymentOrchestrator.initiatePayment(orderId);
-
+    const paymentId = await this.paymentOrchestrator.initiatePayment(orderId);
+    await this.fakePaymentGateway.processPayment(paymentId);
     return orderId;
   }
 }
