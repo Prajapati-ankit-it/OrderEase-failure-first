@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { Auth, CurrentUser } from '../auth/decorators';
 import { successResponse } from '@orderease/shared-utils';
@@ -18,7 +18,7 @@ export class OrderController {
     @Body('idempotencyKey') idempotencyKey: string,
   ) {
     if (!idempotencyKey) {
-      throw new Error('idempotencyKey is required');
+      throw new BadRequestException('idempotencyKey is required');
     }
 
     const orderId = await this.orderService.checkout(userId, idempotencyKey);

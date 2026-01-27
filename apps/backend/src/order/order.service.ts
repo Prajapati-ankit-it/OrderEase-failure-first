@@ -60,6 +60,8 @@ export class OrderService {
 
       // Step 4: Snapshot OrderItems
       // Create order items by copying food name and price from Food table
+      // Note: Using Float for prices as defined in schema. For production,
+      // consider using Decimal type or storing prices in cents as integers
       let totalPrice = 0;
       const totalItemCount = cart.cartItems.length;
 
