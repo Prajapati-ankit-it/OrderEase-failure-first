@@ -6,12 +6,14 @@ import { FakePaymentGateway } from './infra/fake-payment.gateway';
 import { DatabaseModule } from '@orderease/shared-database';
 import { PrismaOrderRepository } from './infra/prisma-order.repository';
 import { ORDER_REPOSITORY } from './infra/order.repository.interface';
+import { PaymentRecoveryWorker } from './application/recovery/payment-recovery.worker';
 
 @Module({
   imports: [DatabaseModule],
   controllers: [OrderController],
   providers: [
     OrderApplicationService,
+    PaymentRecoveryWorker,
     PaymentOrchestratorService,
     {
       provide: ORDER_REPOSITORY,

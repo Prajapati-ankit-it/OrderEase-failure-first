@@ -1,5 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from '@orderease/shared-database';
@@ -16,6 +17,7 @@ import { AppLoggerService, RequestContextMiddleware } from './gateway';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     // Load environment configuration
     ConfigModule.forRoot({
       isGlobal: true,
