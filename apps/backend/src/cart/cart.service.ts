@@ -15,6 +15,7 @@ import {
 } from '../food/infra/food.repository.interface';
 import { FoodDomainError } from '@orderease/shared-contracts';
 import { CartDomainError } from '@orderease/shared-contracts';
+import { centsToDisplay } from '@orderease/shared-utils';
 
 @Injectable()
 export class CartService {
@@ -44,8 +45,8 @@ export class CartService {
 
     const { cart, foodDetails } = cartData;
 
-    // Calculate total
-    const totalPrice = cart.items.reduce((sum, item) => {
+    // Calculate total in cents (integer arithmetic)
+    const totalPriceCents = cart.items.reduce((sum, item) => {
       const food = foodDetails.get(item.foodId);
       return sum + (food?.price || 0) * item.quantity;
     }, 0);
@@ -53,12 +54,18 @@ export class CartService {
     return {
       id: cart.id,
       userId: cart.userId,
-      items: cart.items.map((item) => ({
-        foodId: item.foodId,
-        quantity: item.quantity,
-        food: foodDetails.get(item.foodId),
-      })),
-      totalPrice,
+      items: cart.items.map((item) => {
+        const food = foodDetails.get(item.foodId);
+        return {
+          foodId: item.foodId,
+          quantity: item.quantity,
+          food: food ? {
+            ...food,
+            price: centsToDisplay(food.price), // Convert to display format
+          } : undefined,
+        };
+      }),
+      totalPrice: centsToDisplay(totalPriceCents), // Convert to display format
       itemCount: cart.items.length,
       createdAt: cart.createdAt,
       updatedAt: cart.updatedAt,

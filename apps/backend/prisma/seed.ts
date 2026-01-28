@@ -54,10 +54,10 @@ async function main() {
   // ===============================
   await prisma.food.createMany({
     data: [
-      { name: 'Margherita Pizza', description: 'Classic pizza', price: 12.99, category: 'Pizza' },
-      { name: 'Pepperoni Pizza', description: 'Pepperoni & cheese', price: 14.99, category: 'Pizza' },
-      { name: 'Pasta Carbonara', description: 'Italian pasta', price: 13.99, category: 'Pasta' },
-      { name: 'Coca Cola', description: 'Cold drink', price: 2.99, category: 'Beverages' },
+      { name: 'Margherita Pizza', description: 'Classic pizza', price: 1299, category: 'Pizza' }, // $12.99 in cents
+      { name: 'Pepperoni Pizza', description: 'Pepperoni & cheese', price: 1499, category: 'Pizza' }, // $14.99 in cents
+      { name: 'Pasta Carbonara', description: 'Italian pasta', price: 1399, category: 'Pasta' }, // $13.99 in cents
+      { name: 'Coca Cola', description: 'Cold drink', price: 299, category: 'Beverages' }, // $2.99 in cents
     ],
   });
 
@@ -116,6 +116,7 @@ async function main() {
   // ===============================
   // PAYMENT
   // ===============================
+  // Prices are now in cents, calculate total in cents
   const totalAmount =
     foods[0].price * 1 +
     foods[1].price * 2;

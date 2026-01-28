@@ -6,6 +6,7 @@ import {
   type IFoodRepository,
   FOOD_REPOSITORY,
 } from './infra/food.repository.interface';
+import { displayToCents, centsToDisplay } from '@orderease/shared-utils';
 
 @Injectable()
 export class FoodService {
@@ -21,20 +22,22 @@ export class FoodService {
     const food = new Food({
       name: createFoodDto.name,
       description: createFoodDto.description,
-      price: createFoodDto.price,
+      price: displayToCents(createFoodDto.price), // Convert dollars to cents
       category: createFoodDto.category,
       image: createFoodDto.image,
       isAvailable: createFoodDto.isAvailable ?? true,
     });
 
-    return this.foodRepository.create(food);
+    const created = await this.foodRepository.create(food);
+    return this.formatFoodOutput(created);
   }
 
   /**
    * Get all food items
    */
   async findAll(category?: string, includeUnavailable?: boolean) {
-    return this.foodRepository.findAll(category, includeUnavailable);
+    const foods = await this.foodRepository.findAll(category, includeUnavailable);
+    return foods.map(food => this.formatFoodOutput(food));
   }
 
   /**
@@ -47,7 +50,7 @@ export class FoodService {
       throw new NotFoundException(MESSAGES.GENERAL.NOT_FOUND);
     }
 
-    return food;
+    return this.formatFoodOutput(food);
   }
 
   /**
@@ -70,7 +73,7 @@ export class FoodService {
     if (updateFoodDto.description !== undefined)
       updateData.description = updateFoodDto.description;
     if (updateFoodDto.price !== undefined)
-      updateData.price = updateFoodDto.price;
+      updateData.price = displayToCents(updateFoodDto.price); // Convert dollars to cents
     if (updateFoodDto.category !== undefined)
       updateData.category = updateFoodDto.category;
     if (updateFoodDto.image !== undefined)
@@ -78,7 +81,8 @@ export class FoodService {
     if (updateFoodDto.isAvailable !== undefined)
       updateData.isAvailable = updateFoodDto.isAvailable;
 
-    return this.foodRepository.update(id, updateData);
+    const updated = await this.foodRepository.update(id, updateData);
+    return this.formatFoodOutput(updated);
   }
 
   /**
@@ -90,5 +94,15 @@ export class FoodService {
     await this.foodRepository.delete(id);
 
     return { message: 'Food item deleted successfully' };
+  }
+
+  /**
+   * Format food output - convert price from cents to display format
+   */
+  private formatFoodOutput(food: any) {
+    return {
+      ...food,
+      price: centsToDisplay(food.price),
+    };
   }
 }
