@@ -38,6 +38,14 @@ export function assertValidTransition(
   currentState: OrderState,
   nextEvent: OrderEventType,
 ) {
+  if (nextEvent === OrderEventType.PAYMENT_REFUNDED) {
+    if (currentState !== OrderState.CANCELLED) {
+      throw new Error(
+        `Refund allowed only for CANCELLED orders. Current state: ${currentState}`,
+      );
+    }
+    return; // valid, no state transition
+  }
   const allowedEvents = ALLOWED_TRANSITIONS[currentState];
 
   if (!allowedEvents.includes(nextEvent)) {

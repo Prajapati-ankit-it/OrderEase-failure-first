@@ -1,4 +1,4 @@
-import { PrismaClient, Role, OrderEventType, EventSource, PaymentStatus } from '@prisma/client';
+import { PrismaClient, Role, OrderEventType, OrderEventSource, PaymentStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -141,33 +141,33 @@ async function main() {
         orderId: order.id,
         type: OrderEventType.ORDER_REQUESTED,
         payload: { message: 'User placed order' },
-        causedBy: EventSource.USER,
+        causedBy: OrderEventSource.USER,
       },
       {
         orderId: order.id,
         type: OrderEventType.ORDER_VALIDATED,
         payload: { message: 'Cart validated' },
-        causedBy: EventSource.SYSTEM,
+        causedBy: OrderEventSource.SYSTEM,
       },
       {
         orderId: order.id,
         type: OrderEventType.PAYMENT_INITIATED,
         payload: { provider: 'FAKE_GATEWAY' },
-        causedBy: EventSource.SYSTEM,
+        causedBy: OrderEventSource.SYSTEM,
         paymentId: payment.id,
       },
       {
         orderId: order.id,
         type: OrderEventType.PAYMENT_SUCCEEDED,
         payload: { transaction: 'seed_txn_success' },
-        causedBy: EventSource.PAYMENT_GATEWAY,
+        causedBy: OrderEventSource.PAYMENT_GATEWAY,
         paymentId: payment.id,
       },
       {
         orderId: order.id,
         type: OrderEventType.ORDER_CONFIRMED,
         payload: { message: 'Order confirmed successfully' },
-        causedBy: EventSource.SYSTEM,
+        causedBy: OrderEventSource.SYSTEM,
       },
     ],
   });

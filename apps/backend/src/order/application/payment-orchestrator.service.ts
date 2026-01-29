@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
-import { OrderEventType, EventSource, PaymentStatus } from '@prisma/client';
+import { OrderEventType, OrderEventSource, PaymentStatus } from '@prisma/client';
 
 import {
   deriveOrderState,
@@ -82,7 +82,7 @@ export class PaymentOrchestratorService {
         data: {
           orderId,
           type: OrderEventType.PAYMENT_INITIATED,
-          causedBy: EventSource.SYSTEM,
+          causedBy: OrderEventSource.SYSTEM,
           paymentId: payment.id,
           payload: {
             amount,

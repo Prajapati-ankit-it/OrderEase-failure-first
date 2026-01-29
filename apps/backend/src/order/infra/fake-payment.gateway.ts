@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
 import {
   OrderEventType,
-  EventSource,
+  OrderEventSource,
   PaymentStatus,
 } from '@prisma/client';
 
@@ -87,7 +87,7 @@ export class FakePaymentGateway {
           orderId: payment.orderId,
           paymentId: payment.id,
           type: nextEventType,
-          causedBy: EventSource.PAYMENT_GATEWAY,
+          causedBy: OrderEventSource.PAYMENT_GATEWAY,
           payload: {
             amount: payment.amount,
             provider: payment.provider,

@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
 import {
   OrderEventType,
-  EventSource,
+  OrderEventSource,
 } from '@prisma/client';
 import {
   deriveOrderState,
@@ -39,7 +39,7 @@ export class OrderCancellationService {
         data: {
           orderId,
           type: OrderEventType.ORDER_CANCELLED,
-          causedBy: EventSource.USER,
+          causedBy: OrderEventSource.USER,
           payload: {
             reason,
             cancelledAt: new Date().toISOString(),

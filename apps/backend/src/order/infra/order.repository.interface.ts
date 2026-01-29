@@ -15,6 +15,13 @@ export interface IOrderRepository {
    * @throws BadRequestException if cart is empty or food items are unavailable
    */
   checkout(userId: string, idempotencyKey: string): Promise<string>;
+  /**
+   * Get Order Timeline - Retrieve chronological events for an order
+   * @param orderId - The ID of the order
+   * @returns Array of order events in chronological order
+   * @throws NotFoundException if order does not exist
+   */
+  timeline(orderId: string): Promise<any>;
 }
 
 export const ORDER_REPOSITORY = Symbol('IOrderRepository');

@@ -625,7 +625,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"idempotencyKey\": \"ankitTesting123\"\n}",
+              "raw": "{\n    \"idempotencyKey\": \"vipultestingsvbtrgvy4\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -699,6 +699,26 @@
               "path": [
                 "order",
                 "{{orderId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get order timeline",
+          "id": "6f977b61-9379-451d-959e-a76c447fc3c2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/order/cmkzy789v0003vdhsiv8pdij6/timeline",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "order",
+                "cmkzy789v0003vdhsiv8pdij6",
+                "timeline"
               ]
             }
           },
@@ -890,7 +910,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Burger\",\n  \"price\": 14.99,\n  \"isAvailable\": false\n}",
+              "raw": "{\n  \"name\": \"Updated Burger\",\n  \"price\": 14.99,\n  \"isAvailable\": true\n}",
               "options": {
                 "raw": {
                   "language": "json"
