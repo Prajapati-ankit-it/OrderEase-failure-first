@@ -15,6 +15,9 @@ export class RefundRecoveryWorker {
       where: { type: OrderEventType.ORDER_CANCELLED },
     });
 
+    if (cancelledOrders.length === 0) {
+      return;
+    }
     for (const order of cancelledOrders) {
       await this.refundOrchestrator.initiateRefund(order.orderId);
     }
