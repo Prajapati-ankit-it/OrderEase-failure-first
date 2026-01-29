@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OrderController } from './order.controller';
-import { OrderApplicationService } from './application/order.service';
+import { OrderService } from './order.service';
 import { PaymentOrchestratorService } from './application/payment-orchestrator.service';
 import { FakePaymentGateway } from './infra/fake-payment.gateway';
 import { DatabaseModule } from '@orderease/shared-database';
@@ -14,7 +14,7 @@ import { RefundOrchestratorService } from './application/refund-orchestrator.ser
   imports: [DatabaseModule],
   controllers: [OrderController],
   providers: [
-    OrderApplicationService,
+    OrderService,
     PaymentRecoveryWorker,
     PaymentOrchestratorService,
     {
@@ -25,6 +25,6 @@ import { RefundOrchestratorService } from './application/refund-orchestrator.ser
     RefundOrchestratorService,
     RefundRecoveryWorker,
   ],
-  exports: [OrderApplicationService, ORDER_REPOSITORY],
+  exports: [OrderService, ORDER_REPOSITORY],
 })
 export class OrderModule {}
