@@ -26,10 +26,11 @@ enum OrderEventType {
   PAYMENT_SUCCEEDED
   PAYMENT_FAILED
   ORDER_CONFIRMED
+  PAYMENT_REFUNDED
   ORDER_CANCELLED
 }
 
-enum EventSource {
+enum OrderEventSource {
   USER
   SYSTEM
   PAYMENT_GATEWAY
@@ -127,7 +128,7 @@ model OrderEvent {
   orderId   String
   type      OrderEventType
   payload   Json
-  causedBy  EventSource
+  causedBy  OrderEventSource
   paymentId String?
   createdAt DateTime       @default(now())
 

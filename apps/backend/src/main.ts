@@ -10,6 +10,7 @@ import {
 } from './gateway';
 import { validateEnv } from '@orderease/shared-config';
 import { PaymentRecoveryWorker } from './order/application/recovery/payment-recovery.worker';
+import { RefundRecoveryWorker } from './order/application/recovery/refund-recovery-worker';
 
 /**
  * Parse and validate CORS origins from configuration
@@ -167,14 +168,15 @@ async function bootstrap() {
 
 // --- INITIALIZE PAYMENT RECOVERY WORKER ---
   const recoveryWorker = app.get(PaymentRecoveryWorker);
-  
+  const refundRecoveryWorker = app.get(RefundRecoveryWorker);
   // Schedule the worker to run every 30 seconds
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   setInterval(async () => {
     try {
       await recoveryWorker.run();
+      await refundRecoveryWorker.run();
     } catch (err) {
-      logger.error(`Critical failure in PaymentRecoveryWorker: ${err.message}`);
+      logger.error(`Critical failure in RecoveryWorker: ${err.message}`);
     }
   }, 30_000);
 

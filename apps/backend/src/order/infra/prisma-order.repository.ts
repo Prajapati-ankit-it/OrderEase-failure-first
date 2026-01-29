@@ -5,7 +5,7 @@
 
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
-import { OrderEventType, EventSource } from '@prisma/client';
+import { OrderEventType, OrderEventSource } from '@prisma/client';
 import { IOrderRepository } from './order.repository.interface';
 import {deriveOrderState, assertValidTransition, OrderState} from '../domain';
 
@@ -125,7 +125,7 @@ export class PrismaOrderRepository implements IOrderRepository {
           {
             orderId: order.id,
             type: OrderEventType.ORDER_REQUESTED,
-            causedBy: EventSource.USER,
+            causedBy: OrderEventSource.USER,
             payload: {
               totalPrice,
               totalItemCount,
@@ -134,7 +134,7 @@ export class PrismaOrderRepository implements IOrderRepository {
           {
             orderId: order.id,
             type: OrderEventType.ORDER_VALIDATED,
-            causedBy: EventSource.SYSTEM,
+            causedBy: OrderEventSource.SYSTEM,
             payload: {
               totalPrice,
               totalItemCount,

@@ -7,6 +7,8 @@ import { DatabaseModule } from '@orderease/shared-database';
 import { PrismaOrderRepository } from './infra/prisma-order.repository';
 import { ORDER_REPOSITORY } from './infra/order.repository.interface';
 import { PaymentRecoveryWorker } from './application/recovery/payment-recovery.worker';
+import { RefundRecoveryWorker } from './application/recovery/refund-recovery-worker';
+import { RefundOrchestratorService } from './application/refund-orchestrator.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -20,6 +22,8 @@ import { PaymentRecoveryWorker } from './application/recovery/payment-recovery.w
       useClass: PrismaOrderRepository,
     },
     FakePaymentGateway,
+    RefundOrchestratorService,
+    RefundRecoveryWorker,
   ],
   exports: [OrderApplicationService, ORDER_REPOSITORY],
 })
