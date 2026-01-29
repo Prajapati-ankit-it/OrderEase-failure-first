@@ -8,7 +8,6 @@ export class RefundOrchestratorService {
   constructor(private readonly prisma: PrismaService) {}
 
   async initiateRefund(orderId: string): Promise<string | null> {
-    
     return this.prisma.$transaction(async (tx) => {
 
       const events = await tx.orderEvent.findMany({
