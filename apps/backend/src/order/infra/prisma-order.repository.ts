@@ -73,10 +73,11 @@ export class PrismaOrderRepository implements IOrderRepository {
       // ===============================
       // Step 4: Snapshot OrderItems
       // ===============================
-      let totalPrice = 0;
+      let totalPrice = 0; // Total in cents
       let totalItemCount = 0;
 
       const orderItemsData = cart.cartItems.map((cartItem) => {
+        // Price is already in cents, use integer arithmetic
         const itemTotal = cartItem.food.price * cartItem.quantity;
         totalPrice += itemTotal;
         totalItemCount += cartItem.quantity;
@@ -85,7 +86,7 @@ export class PrismaOrderRepository implements IOrderRepository {
           orderId: order.id,
           foodId: cartItem.foodId,
           foodName: cartItem.food.name,
-          price: cartItem.food.price,
+          price: cartItem.food.price, // Price in cents
           quantity: cartItem.quantity,
         };
       });

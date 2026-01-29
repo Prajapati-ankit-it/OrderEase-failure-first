@@ -61,12 +61,12 @@ export class PrismaCartRepository implements ICartRepository {
       updatedAt: prismaCart.updatedAt,
     });
 
-    const foodDetails = new Map(
+    const foodDetails = new Map<string, { name: string; price: number; isAvailable: boolean }>(
       prismaCart.cartItems.map((item) => [
         item.foodId,
         {
           name: item.food.name,
-          price: item.food.price,
+          price: item.food.price, // Price in cents (integer)
           isAvailable: item.food.isAvailable,
         },
       ]),

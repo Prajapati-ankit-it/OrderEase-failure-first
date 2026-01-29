@@ -69,7 +69,7 @@ model Food {
   id          String   @id @default(cuid())
   name        String
   description String?
-  price       Float
+  price       Int      // Price in cents (e.g., $10.00 = 1000)
   category    String
   image       String?
   isAvailable Boolean  @default(true)
@@ -109,7 +109,7 @@ model OrderItem {
   orderId  String
   foodId   String
   foodName String
-  price    Float
+  price    Int      // Price in cents (e.g., $10.00 = 1000)
   quantity Int
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -146,7 +146,7 @@ model Payment {
   id        String        @id @default(cuid())
   orderId  String
   provider String
-  amount   Float
+  amount   Int          // Amount in cents (e.g., $10.00 = 1000)
   status   PaymentStatus
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt

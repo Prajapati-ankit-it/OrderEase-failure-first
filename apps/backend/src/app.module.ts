@@ -7,7 +7,7 @@ import { DatabaseModule } from '@orderease/shared-database';
 import { AuthModule } from './auth';
 import { AdminModule } from './admin';
 import { UserModule } from './user';
-// import { PublicModule } from './public';
+import { PublicModule } from './public';
 import { FoodModule } from './food';
 import { OrderModule } from './order';
 import { CartModule } from './cart';
@@ -29,7 +29,7 @@ import { AppLoggerService, RequestContextMiddleware } from './gateway';
     AuthModule,
     AdminModule,
     UserModule,
-    // PublicModule,
+    PublicModule,
     FoodModule,
     CartModule,
     OrderModule,

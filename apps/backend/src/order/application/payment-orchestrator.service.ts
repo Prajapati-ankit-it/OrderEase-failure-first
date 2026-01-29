@@ -53,6 +53,7 @@ export class PaymentOrchestratorService {
         where: { orderId },
       });
 
+      // Amount in cents - use integer arithmetic
       const amount = orderItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0,
