@@ -9,6 +9,8 @@ import { ORDER_REPOSITORY } from './infra/order.repository.interface';
 import { PaymentRecoveryWorker } from './application/recovery/payment-recovery.worker';
 import { RefundRecoveryWorker } from './application/recovery/refund-recovery-worker';
 import { RefundOrchestratorService } from './application/refund-orchestrator.service';
+import { PrismaPaymentRepository } from './infra/prisma-payment.repository';
+import { PAYMENT_REPOSITORY } from './infra/payment.repository.interface';
 
 @Module({
   imports: [DatabaseModule],
@@ -21,10 +23,14 @@ import { RefundOrchestratorService } from './application/refund-orchestrator.ser
       provide: ORDER_REPOSITORY,
       useClass: PrismaOrderRepository,
     },
+    {
+      provide: PAYMENT_REPOSITORY,
+      useClass: PrismaPaymentRepository,
+    },
     FakePaymentGateway,
     RefundOrchestratorService,
     RefundRecoveryWorker,
   ],
-  exports: [OrderService, ORDER_REPOSITORY],
+  exports: [OrderService, ORDER_REPOSITORY, PAYMENT_REPOSITORY],
 })
 export class OrderModule {}

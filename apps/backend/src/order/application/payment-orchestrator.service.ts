@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
 import { OrderEventType, OrderEventSource, PaymentStatus } from '@prisma/client';
 
@@ -7,10 +7,17 @@ import {
   assertValidTransition,
   OrderState,
 } from '../domain';
+import { FakePaymentGateway } from '../infra/fake-payment.gateway';
+import { IPaymentRepository, PAYMENT_REPOSITORY } from '../infra/payment.repository.interface';
 
 @Injectable()
 export class PaymentOrchestratorService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly fakePaymentGateway: FakePaymentGateway,
+    @Inject(PAYMENT_REPOSITORY)
+    private readonly paymentRepository: IPaymentRepository,
+  ) {}
 
   /**
    * Initiates payment for an order.
@@ -92,6 +99,94 @@ export class PaymentOrchestratorService {
       });
 
       return payment.id;
+    });
+  }
+
+  /**
+   * Process a payment - orchestrates the entire payment workflow
+   * This is the main business logic for payment processing:
+   * 1. Load payment via repository
+   * 2. Load order events
+   * 3. Derive current order state
+   * 4. Call FakePaymentGateway to simulate external payment
+   * 5. Validate state transition using domain state machine
+   * 6. Update payment status
+   * 7. Emit OrderEvent (PAYMENT_SUCCEEDED / PAYMENT_FAILED)
+   * 
+   * All operations run inside prisma.$transaction
+   */
+  async processPayment(paymentId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      // ===============================
+      // Step 1: Load payment via repository
+      // ===============================
+      const payment = await tx.payment.findUnique({
+        where: { id: paymentId },
+      });
+
+      if (!payment) {
+        throw new BadRequestException('Payment not found');
+      }
+
+      // ===============================
+      // Step 2: Load order events
+      // ===============================
+      const events = await tx.orderEvent.findMany({
+        where: { orderId: payment.orderId },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      // ===============================
+      // Step 3: Derive current order state
+      // ===============================
+      const currentState: OrderState = deriveOrderState(events);
+
+      // ===============================
+      // Step 4: Call FakePaymentGateway to simulate external payment
+      // ===============================
+      const paymentResult = await this.fakePaymentGateway.charge(paymentId);
+
+      // ===============================
+      // Step 5: Determine next event type based on gateway response
+      // ===============================
+      const nextEventType = paymentResult === 'SUCCESS'
+        ? OrderEventType.PAYMENT_SUCCEEDED
+        : OrderEventType.PAYMENT_FAILED;
+
+      // ===============================
+      // Step 6: Validate state transition using domain state machine
+      // ===============================
+      assertValidTransition(currentState, nextEventType);
+
+      // ===============================
+      // Step 7: Update payment status
+      // ===============================
+      const newStatus = paymentResult === 'SUCCESS'
+        ? PaymentStatus.SUCCEEDED
+        : PaymentStatus.FAILED;
+
+      await tx.payment.update({
+        where: { id: payment.id },
+        data: { status: newStatus },
+      });
+
+      // ===============================
+      // Step 8: Emit OrderEvent (PAYMENT_SUCCEEDED / PAYMENT_FAILED)
+      // ===============================
+      await tx.orderEvent.create({
+        data: {
+          orderId: payment.orderId,
+          paymentId: payment.id,
+          type: nextEventType,
+          causedBy: OrderEventSource.PAYMENT_GATEWAY,
+          payload: {
+            amount: payment.amount,
+            provider: payment.provider,
+            simulated: true,
+            result: paymentResult,
+          },
+        },
+      });
     });
   }
 }

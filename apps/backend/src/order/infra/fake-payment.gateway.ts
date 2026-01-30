@@ -1,16 +1,10 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '@orderease/shared-database';
-import {
-  OrderEventType,
-  OrderEventSource,
-  PaymentStatus,
-} from '@prisma/client';
+/**
+ * Fake Payment Gateway
+ * Pure gateway - simulates external payment provider ONLY
+ * NO database access, NO business logic, NO event emission
+ */
 
-import {
-  deriveOrderState,
-  assertValidTransition,
-  OrderState,
-} from '../domain';
+import { Injectable } from '@nestjs/common';
 
 type FakePaymentMode =
   | 'ALWAYS_SUCCESS'
@@ -20,82 +14,42 @@ type FakePaymentMode =
 @Injectable()
 export class FakePaymentGateway {
   private readonly mode: FakePaymentMode = 'ALWAYS_SUCCESS';
-
-  constructor(private readonly prisma: PrismaService) {}
+  private failureCount = new Map<string, number>();
 
   /**
-   * Simulate a payment provider callback.
-   * This emits PAYMENT_SUCCEEDED or PAYMENT_FAILED.
+   * Simulate charging a payment through external provider
+   * @param paymentId - The payment ID (used for fail-once mode tracking)
+   * @returns 'SUCCESS' or 'FAILED'
    */
-  async processPayment(paymentId: string): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      // ===============================
-      // Step 1: Load payment
-      // ===============================
-      const payment = await tx.payment.findUnique({
-        where: { id: paymentId },
-      });
+  async charge(paymentId: string): Promise<'SUCCESS' | 'FAILED'> {
+    // Simulate network latency
+    await this.simulateDelay();
 
-      if (!payment) {
-        throw new BadRequestException('Payment not found');
+    // Determine outcome based on mode
+    switch (this.mode) {
+      case 'ALWAYS_SUCCESS':
+        return 'SUCCESS';
+
+      case 'ALWAYS_FAIL':
+        return 'FAILED';
+
+      case 'FAIL_ONCE_THEN_SUCCESS': {
+        const failures = this.failureCount.get(paymentId) || 0;
+        if (failures === 0) {
+          this.failureCount.set(paymentId, 1);
+          return 'FAILED';
+        }
+        return 'SUCCESS';
       }
 
-      // ===============================
-      // Step 2: Load order events
-      // ===============================
-      const events = await tx.orderEvent.findMany({
-        where: { orderId: payment.orderId },
-        orderBy: { createdAt: 'asc' },
-      });
+      default:
+        return 'SUCCESS';
+    }
+  }
 
-      const currentState: OrderState = deriveOrderState(events);
-
-      // ===============================
-      // Step 3: Decide outcome (simulation)
-      // ===============================
-      const shouldSucceed =
-        this.mode === 'ALWAYS_SUCCESS' ||
-        (this.mode === 'FAIL_ONCE_THEN_SUCCESS' &&
-          payment.status === PaymentStatus.FAILED);
-
-      const nextEventType = shouldSucceed
-        ? OrderEventType.PAYMENT_SUCCEEDED
-        : OrderEventType.PAYMENT_FAILED;
-
-      // ===============================
-      // Step 4: Validate transition
-      // ===============================
-      assertValidTransition(currentState, nextEventType);
-
-      // ===============================
-      // Step 5: Update payment record
-      // ===============================
-      await tx.payment.update({
-        where: { id: payment.id },
-        data: {
-          status: shouldSucceed
-            ? PaymentStatus.SUCCEEDED
-            : PaymentStatus.FAILED,
-        },
-      });
-
-      // ===============================
-      // Step 6: Emit outcome event
-      // ===============================
-      await tx.orderEvent.create({
-        data: {
-          orderId: payment.orderId,
-          paymentId: payment.id,
-          type: nextEventType,
-          causedBy: OrderEventSource.PAYMENT_GATEWAY,
-          payload: {
-            amount: payment.amount,
-            provider: payment.provider,
-            simulated: true,
-            mode: this.mode,
-          },
-        },
-      });
-    });
+  private async simulateDelay(): Promise<void> {
+    // Simulate 10-50ms network delay
+    const delay = Math.random() * 40 + 10;
+    return new Promise((resolve) => setTimeout(resolve, delay));
   }
 }
