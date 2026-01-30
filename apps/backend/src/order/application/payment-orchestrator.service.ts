@@ -113,13 +113,17 @@ export class PaymentOrchestratorService {
    * 5. Validate state transition using domain state machine
    * 6. Update payment status and emit event (in new transaction)
    * 
-   * Note: Gateway call is intentionally OUTSIDE transaction to avoid long-held locks
+   * Note: Gateway call is intentionally OUTSIDE transaction to avoid long-held locks.
+   * This pattern assumes the external payment gateway is configured with reasonable
+   * timeouts. In a real system, very long-running or stuck gateway calls can still
+   * tie up worker threads and indirectly impact resources (e.g. connection pools)
+   * under high concurrency, even though the database transaction is not held open.
    */
   async processPayment(paymentId: string): Promise<void> {
     // ===============================
     // Step 1-3: Load data and validate (inside transaction for consistency)
     // ===============================
-    const { payment, currentState } = await this.prisma.$transaction(async (tx) => {
+    const { payment } = await this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.findUnique({
         where: { id: paymentId },
       });
@@ -128,6 +132,36 @@ export class PaymentOrchestratorService {
         throw new BadRequestException('Payment not found');
       }
 
+      // Idempotency check: ensure payment hasn't already been processed
+      if (payment.status !== PaymentStatus.INITIATED) {
+        throw new BadRequestException(
+          `Payment ${paymentId} has already been processed with status: ${payment.status}`,
+        );
+      }
+
+      return { payment };
+    });
+
+    // ===============================
+    // Step 4: Call FakePaymentGateway to simulate external payment
+    // This is OUTSIDE transaction to avoid holding DB locks during external call
+    // ===============================
+    let paymentResult: 'SUCCESS' | 'FAILED';
+    let gatewayError: Error | null = null;
+
+    try {
+      paymentResult = await this.fakePaymentGateway.charge(paymentId);
+    } catch (error) {
+      // If the gateway call itself fails (e.g., timeout), treat as FAILED
+      gatewayError = error instanceof Error ? error : new Error('Unknown payment gateway error');
+      paymentResult = 'FAILED';
+    }
+
+    // ===============================
+    // Step 5-7: Update database based on gateway response (new transaction)
+    // ===============================
+    await this.prisma.$transaction(async (tx) => {
+      // Re-derive current state to check for race conditions
       const events = await tx.orderEvent.findMany({
         where: { orderId: payment.orderId },
         orderBy: { createdAt: 'asc' },
@@ -135,19 +169,6 @@ export class PaymentOrchestratorService {
 
       const currentState: OrderState = deriveOrderState(events);
 
-      return { payment, currentState };
-    });
-
-    // ===============================
-    // Step 4: Call FakePaymentGateway to simulate external payment
-    // This is OUTSIDE transaction to avoid holding DB locks during external call
-    // ===============================
-    const paymentResult = await this.fakePaymentGateway.charge(paymentId);
-
-    // ===============================
-    // Step 5-7: Update database based on gateway response (new transaction)
-    // ===============================
-    await this.prisma.$transaction(async (tx) => {
       // Determine next event type based on gateway response
       const nextEventType = paymentResult === 'SUCCESS'
         ? OrderEventType.PAYMENT_SUCCEEDED
@@ -178,9 +199,18 @@ export class PaymentOrchestratorService {
             provider: payment.provider,
             simulated: true,
             result: paymentResult,
+            ...(gatewayError && {
+              errorMessage: gatewayError.message,
+              errorType: 'GATEWAY_ERROR',
+            }),
           },
         },
       });
     });
+
+    // If there was a gateway error, propagate it after recording the failure
+    if (gatewayError) {
+      throw gatewayError;
+    }
   }
 }

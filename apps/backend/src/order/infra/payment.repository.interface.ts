@@ -41,9 +41,10 @@ export interface IPaymentRepository {
    * Create a new payment record
    * @param orderId - The order ID
    * @param amount - Payment amount in cents
+   * @param provider - Payment provider name
    * @returns The created payment record
    */
-  create(orderId: string, amount: number): Promise<{
+  create(orderId: string, amount: number, provider: string): Promise<{
     id: string;
     orderId: string;
     provider: string;

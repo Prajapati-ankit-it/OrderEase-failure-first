@@ -26,11 +26,11 @@ export class PrismaPaymentRepository implements IPaymentRepository {
     });
   }
 
-  async create(orderId: string, amount: number) {
+  async create(orderId: string, amount: number, provider: string) {
     return this.prisma.payment.create({
       data: {
         orderId,
-        provider: 'FAKE_GATEWAY',
+        provider,
         amount,
         status: PaymentStatus.INITIATED,
       },

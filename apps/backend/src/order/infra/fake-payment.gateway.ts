@@ -57,11 +57,11 @@ export class FakePaymentGateway {
 
   /**
    * Clean up old entries from cache to prevent unbounded growth
-   * Simple LRU-like cleanup: remove oldest entries when size exceeds threshold
+   * Simple FIFO eviction: removes oldest entries based on insertion order (not LRU)
    */
   private cleanupCache(): void {
     if (this.failureCount.size > this.MAX_CACHE_SIZE) {
-      // Remove first 20% of entries (oldest based on insertion order)
+      // Remove first 20% of entries (oldest based on insertion order, not access order)
       const entriesToRemove = Math.floor(this.MAX_CACHE_SIZE * 0.2);
       let removed = 0;
       for (const key of this.failureCount.keys()) {
