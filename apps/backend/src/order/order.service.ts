@@ -5,7 +5,6 @@ import {
   ORDER_REPOSITORY,
 } from './infra/order.repository.interface';
 import { PaymentOrchestratorService } from './application/payment-orchestrator.service';
-import { FakePaymentGateway } from './infra/fake-payment.gateway';
 
 @Injectable()
 export class OrderService {
@@ -13,7 +12,6 @@ export class OrderService {
     @Inject(ORDER_REPOSITORY)
     private orderRepository: IOrderRepository,
     private readonly paymentOrchestrator: PaymentOrchestratorService,
-    private readonly fakePaymentGateway: FakePaymentGateway,
     private readonly prisma: PrismaService,
   ) { }
 
@@ -38,7 +36,7 @@ export class OrderService {
 
     // PHASE 2: Trigger next step AFTER COMMIT
     const paymentId = await this.paymentOrchestrator.initiatePayment(orderId);
-    await this.fakePaymentGateway.processPayment(paymentId);
+    await this.paymentOrchestrator.processPayment(paymentId);
     return orderId;
   }
 

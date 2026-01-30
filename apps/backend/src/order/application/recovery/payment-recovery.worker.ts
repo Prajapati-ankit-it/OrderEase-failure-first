@@ -1,37 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
-import { FakePaymentGateway } from '../../infra/fake-payment.gateway';
-import { PaymentStatus } from '@prisma/client';
+import { PaymentOrchestratorService } from '../payment-orchestrator.service';
 
 @Injectable()
 export class PaymentRecoveryWorker {
-  // Payments stuck for more than 1 minute are considered recoverable
   private readonly STUCK_THRESHOLD_MS = 1 * 60 * 1000;
+
   constructor(
     private readonly prisma: PrismaService,
-    private readonly fakePaymentGateway: FakePaymentGateway,
-  ) {}
-
+    private readonly paymentOrchestrator: PaymentOrchestratorService,
+  ) { }
+  
   async run(): Promise<void> {
-    const cutoff = new Date(Date.now() - this.STUCK_THRESHOLD_MS);
-    
-    const stuckPayments = await this.prisma.payment.findMany({
-      where: {
-        status: PaymentStatus.INITIATED,
-        createdAt: { lt: cutoff },
-      },
+    // ===============================
+    // Phase 1: CLAIM - Short transaction with row locking
+    // ===============================
+    const claimedPayments = await this.prisma.$transaction(async (tx) => {
+      const cutoff = new Date(Date.now() - this.STUCK_THRESHOLD_MS);
+
+      const lockedPayments = await tx.$queryRaw<
+        { id: string; orderId: string }[]
+      >`
+        SELECT id, "orderId"
+        FROM payments
+        WHERE status = 'INITIATED'::"PaymentStatus"
+          AND "createdAt" < ${cutoff}
+        FOR UPDATE SKIP LOCKED
+        LIMIT 10
+      `;
+
+      return lockedPayments;
     });
 
-    for (const payment of stuckPayments) {
+    // ===============================
+    // Phase 2: PROCESS - Outside transaction
+    // Each payment processes in its own independent transaction
+    // ===============================
+    for (const payment of claimedPayments) {
       try {
-        await this.fakePaymentGateway.processPayment(payment.id);
-        console.log(
-          `[RecoveryWorker] Successfully processed payment ${payment.id}`,
-        );
-      } catch (err) {
+        await this.paymentOrchestrator.processPayment(payment.id);
+        console.log(`[PaymentRecoveryWorker] Successfully processed payment ${payment.id}`);
+      } catch (error) {
         console.error(
-          `[RecoveryWorker] Failed to recover payment ${payment.id}`,
-          err,
+          `[PaymentRecoveryWorker] Failed to process payment ${payment.id}`,
+          error,
         );
       }
     }

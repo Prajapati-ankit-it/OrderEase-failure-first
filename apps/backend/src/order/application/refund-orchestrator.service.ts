@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@orderease/shared-database";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { assertValidTransition, deriveOrderState, OrderState } from "../domain";
 import { OrderEventSource, OrderEventType, PaymentStatus } from "@prisma/client";
 
@@ -39,7 +40,6 @@ export class RefundOrchestratorService {
       if (payment.status !== PaymentStatus.SUCCEEDED) {
         return null;
       }
-      console.log("entering");
       // assertValidTransition(
       //   currentState,
       //   OrderEventType.PAYMENT_REFUNDED,
