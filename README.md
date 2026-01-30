@@ -15,6 +15,7 @@ A production-grade restaurant ordering system built on a **Modular Monolith** ar
   - [Event Sourcing](#event-sourcing)
   - [Idempotency](#idempotency)
   - [Resiliency](#resiliency)
+- [Chaos Scenarios & Recovery Guarantees](#-chaos-scenarios--recovery-guarantees)
 - [Tech Stack](#-tech-stack)
 - [Prerequisites](#-prerequisites)
 - [Local Setup](#-local-setup)
@@ -270,6 +271,186 @@ How the system handles common failure modes:
 | **Duplicate order submission** | Idempotency key match | Return existing `orderId` | Same order returned, no side effects |
 | **Order cancelled after payment** | `ORDER_CANCELLED` event emitted | `RefundRecoveryWorker` initiates refund | Refund processed, `PAYMENT_REFUNDED` event |
 | **Worker crash during recovery** | Worker restarts | Re-query stuck payments | Eventually consistent, no lost work |
+
+## 🔥 Chaos Scenarios & Recovery Guarantees
+
+This section documents how OrderEase behaves under real-world distributed systems failures. These are not theoretical—the patterns described here are implemented and tested in production-grade code.
+
+### Scenario 1: Server Crashes After PAYMENT_SUCCEEDED but Before Order Confirmation
+
+**What Happens:**
+
+A payment request succeeds at the gateway, and the `PAYMENT_SUCCEEDED` event is written to the database. Before the system can emit the `ORDER_CONFIRMED` event, the server crashes (OOM, container restart, process killed).
+
+When the system restarts:
+1. The `OrderEvent` table contains `PAYMENT_SUCCEEDED` but no `ORDER_CONFIRMED`
+2. State derivation treats this as a valid terminal state (payment complete)
+3. No duplicate payment attempt occurs because:
+   - The `Payment` record has `status = SUCCEEDED`
+   - The idempotency key is already stored with the order ID
+   - Recovery workers skip payments that are not in `INITIATED` state
+
+**Recovery:**
+
+State derivation from events ensures correctness:
+
+```typescript
+deriveOrderState([
+  { type: 'ORDER_REQUESTED' },
+  { type: 'ORDER_VALIDATED' },
+  { type: 'PAYMENT_INITIATED' },
+  { type: 'PAYMENT_SUCCEEDED' }
+]);
+// → Returns: OrderState.CONFIRMED (payment success = order confirmed)
+```
+
+The missing `ORDER_CONFIRMED` event is not required for correctness. The order is complete because `PAYMENT_SUCCEEDED` is the definitive state transition.
+
+**Guarantee:**
+
+- ✅ **Payment is processed exactly once** — The payment gateway is idempotent by payment ID.
+- ✅ **Order state is always derivable from events** — No data loss, audit trail intact.
+- ✅ **No duplicate charges** — Idempotency key prevents retries from creating new payments.
+
+---
+
+### Scenario 2: Client Retries Checkout Request Multiple Times
+
+**What Happens:**
+
+The client submits a checkout request with an `idempotencyKey`. The request times out (network delay, slow database, gateway latency). The client retries with the same `idempotencyKey`.
+
+Execution flow:
+1. **First request**: Creates order, stores idempotency key with `{ orderId: "abc123" }`
+2. **Retry**: Repository checks `IdempotencyKey` table, finds existing key, returns cached `orderId`
+3. **No side effects**: No new order, no new payment, no duplicate events
+
+```typescript
+// Inside PrismaOrderRepository.createOrder()
+const existingIdempotency = await tx.idempotencyKey.findUnique({
+  where: { key: idempotencyKey }
+});
+
+if (existingIdempotency) {
+  return existingIdempotency.response.orderId; // ← Returns cached result
+}
+```
+
+**Recovery:**
+
+Idempotency is transactional. The key is stored in the **same transaction** as order creation. Either both succeed or both roll back. This prevents:
+- Partial writes (order created, key not stored)
+- Race conditions (two concurrent requests with same key)
+
+**Guarantee:**
+
+- ✅ **Checkout is exactly-once at the business level** — Multiple retries with the same key return the same order ID.
+- ✅ **No zombie orders** — Transaction atomicity ensures consistency.
+- ✅ **Safe for network failures** — Clients can always retry safely.
+
+---
+
+### Scenario 3: Worker Crashes Mid-Payment Processing
+
+**What Happens:**
+
+A payment is stuck in `INITIATED` state (gateway timeout, network failure, server crash). The `PaymentRecoveryWorker` runs every minute and finds stuck payments:
+
+```sql
+SELECT id, "orderId"
+FROM payments
+WHERE status = 'INITIATED' AND "createdAt" < (NOW() - INTERVAL '1 minute')
+FOR UPDATE SKIP LOCKED
+LIMIT 10
+```
+
+**Critical pattern**: `FOR UPDATE SKIP LOCKED`
+
+- Multiple worker replicas can run concurrently
+- Each worker "claims" a set of payments via row-level locking
+- `SKIP LOCKED` prevents workers from blocking on already-claimed rows
+- If a worker crashes, its locks are released and the payment becomes claimable again
+
+**Recovery:**
+
+Worker restarts and re-queries. The same payment is picked up again. Processing is idempotent at the gateway layer (payment ID is deterministic).
+
+If the gateway already processed the payment:
+1. Worker calls `gateway.getPaymentStatus(paymentId)`
+2. Gateway returns `SUCCEEDED` or `FAILED`
+3. Worker emits corresponding event (`PAYMENT_SUCCEEDED` or `PAYMENT_FAILED`)
+
+**Guarantee:**
+
+- ✅ **Payments are eventually resolved** — Workers retry until terminal state.
+- ✅ **No two workers process the same payment simultaneously** — `FOR UPDATE SKIP LOCKED` ensures mutual exclusion.
+- ✅ **Worker crashes do not lose work** — Locks are released, payment becomes claimable again.
+
+---
+
+### Scenario 4: Order Cancelled After Payment Success
+
+**What Happens:**
+
+1. User places an order, payment succeeds (`PAYMENT_SUCCEEDED` event emitted)
+2. User (or admin) cancels the order (`ORDER_CANCELLED` event emitted)
+3. System must issue a refund
+
+**Refund Eligibility:**
+
+The `RefundRecoveryWorker` queries for orders that meet all conditions:
+- Payment is `SUCCEEDED` (money was charged)
+- Order has `ORDER_CANCELLED` event (cancellation requested)
+- No `PAYMENT_REFUNDED` event exists (refund not yet issued)
+
+```sql
+SELECT p."orderId"
+FROM payments p
+WHERE p.status = 'SUCCEEDED'
+  AND EXISTS (
+    SELECT 1 FROM order_events
+    WHERE "orderId" = p."orderId" AND type = 'ORDER_CANCELLED'
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM payments p2
+    WHERE p2."orderId" = p."orderId" AND p2.status = 'REFUNDED'
+  )
+FOR UPDATE OF p SKIP LOCKED
+```
+
+**Recovery:**
+
+1. Worker claims eligible refunds using row-level locking
+2. Calls `RefundOrchestrator.initiateRefund(orderId)`
+3. Orchestrator:
+   - Updates payment status to `REFUNDED`
+   - Emits `PAYMENT_REFUNDED` event
+   - Calls gateway to process refund
+
+If the worker crashes:
+- Lock is released
+- Next worker run picks up the same order
+- Gateway refund is idempotent (refund ID is deterministic)
+
+**Guarantee:**
+
+- ✅ **Refunds are idempotent** — Duplicate refund requests to the gateway are deduplicated by refund ID.
+- ✅ **No double refunds** — Event log and payment status prevent re-processing.
+- ✅ **Eventually consistent** — If the refund gateway times out, the worker retries until success.
+- ✅ **Audit trail** — `PAYMENT_REFUNDED` event provides proof of refund for financial reconciliation.
+
+---
+
+### Why These Patterns Matter
+
+**Event Sourcing + Idempotency + Recovery Workers** eliminate entire classes of distributed systems failures:
+
+- **No compensating transactions** — Events are append-only; we never "undo" in the database.
+- **No distributed locks** — `FOR UPDATE SKIP LOCKED` provides DB-level mutual exclusion.
+- **No manual reconciliation** — Workers automatically detect and recover inconsistent states.
+- **No data loss** — Every meaningful action is recorded as an immutable event.
+
+These are the same patterns used in high-reliability systems (payments, fintech, e-commerce). The goal is not zero failures—it's **predictable recovery from any failure**.
 
 ## 🛠️ Tech Stack
 
