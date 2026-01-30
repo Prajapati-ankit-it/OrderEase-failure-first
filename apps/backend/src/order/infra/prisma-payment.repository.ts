@@ -7,27 +7,30 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@orderease/shared-database';
 import { PaymentStatus } from '@prisma/client';
-import { IPaymentRepository } from './payment.repository.interface';
+import { IPaymentRepository, PrismaTransactionClient } from './payment.repository.interface';
 
 @Injectable()
 export class PrismaPaymentRepository implements IPaymentRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findById(paymentId: string) {
-    return this.prisma.payment.findUnique({
+  async findById(paymentId: string, tx?: PrismaTransactionClient) {
+    const client = tx || this.prisma;
+    return client.payment.findUnique({
       where: { id: paymentId },
     });
   }
 
-  async findLatestByOrderId(orderId: string) {
-    return this.prisma.payment.findFirst({
+  async findLatestByOrderId(orderId: string, tx?: PrismaTransactionClient) {
+    const client = tx || this.prisma;
+    return client.payment.findFirst({
       where: { orderId },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async create(orderId: string, amount: number, provider: string) {
-    return this.prisma.payment.create({
+  async create(orderId: string, amount: number, provider: string, tx?: PrismaTransactionClient) {
+    const client = tx || this.prisma;
+    return client.payment.create({
       data: {
         orderId,
         provider,
@@ -37,8 +40,9 @@ export class PrismaPaymentRepository implements IPaymentRepository {
     });
   }
 
-  async updateStatus(paymentId: string, status: PaymentStatus): Promise<void> {
-    await this.prisma.payment.update({
+  async updateStatus(paymentId: string, status: PaymentStatus, tx?: PrismaTransactionClient): Promise<void> {
+    const client = tx || this.prisma;
+    await client.payment.update({
       where: { id: paymentId },
       data: { status },
     });

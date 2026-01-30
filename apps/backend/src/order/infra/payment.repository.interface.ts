@@ -4,15 +4,25 @@
  * No business logic, no state machine, no event emission
  */
 
-import { PaymentStatus } from '@prisma/client';
+import { PaymentStatus, Prisma } from '@prisma/client';
+
+// Type for Prisma transaction client
+export type PrismaTransactionClient = Omit<
+  Prisma.TransactionClient,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>;
 
 export interface IPaymentRepository {
   /**
    * Find a payment by its ID
    * @param paymentId - The payment ID
+   * @param tx - Optional transaction client for transactional operations
    * @returns The payment record or null if not found
    */
-  findById(paymentId: string): Promise<{
+  findById(
+    paymentId: string,
+    tx?: PrismaTransactionClient,
+  ): Promise<{
     id: string;
     orderId: string;
     provider: string;
@@ -25,9 +35,13 @@ export interface IPaymentRepository {
   /**
    * Find the latest payment for an order
    * @param orderId - The order ID
+   * @param tx - Optional transaction client for transactional operations
    * @returns The most recent payment record or null if none exists
    */
-  findLatestByOrderId(orderId: string): Promise<{
+  findLatestByOrderId(
+    orderId: string,
+    tx?: PrismaTransactionClient,
+  ): Promise<{
     id: string;
     orderId: string;
     provider: string;
@@ -42,9 +56,15 @@ export interface IPaymentRepository {
    * @param orderId - The order ID
    * @param amount - Payment amount in cents
    * @param provider - Payment provider name
+   * @param tx - Optional transaction client for transactional operations
    * @returns The created payment record
    */
-  create(orderId: string, amount: number, provider: string): Promise<{
+  create(
+    orderId: string,
+    amount: number,
+    provider: string,
+    tx?: PrismaTransactionClient,
+  ): Promise<{
     id: string;
     orderId: string;
     provider: string;
@@ -58,8 +78,13 @@ export interface IPaymentRepository {
    * Update payment status
    * @param paymentId - The payment ID
    * @param status - The new status
+   * @param tx - Optional transaction client for transactional operations
    */
-  updateStatus(paymentId: string, status: PaymentStatus): Promise<void>;
+  updateStatus(
+    paymentId: string,
+    status: PaymentStatus,
+    tx?: PrismaTransactionClient,
+  ): Promise<void>;
 
   /**
    * Find payments that are stuck in INITIATED status

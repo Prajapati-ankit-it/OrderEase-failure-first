@@ -189,15 +189,12 @@ export class PaymentOrchestratorService {
       // Validate state transition using domain state machine
       assertValidTransition(currentState, nextEventType);
 
-      // Update payment status
+      // Update payment status using repository
       const newStatus = paymentResult === 'SUCCESS'
         ? PaymentStatus.SUCCEEDED
         : PaymentStatus.FAILED;
 
-      await tx.payment.update({
-        where: { id: payment.id },
-        data: { status: newStatus },
-      });
+      await this.paymentRepository.updateStatus(payment.id, newStatus, tx);
 
       // Emit OrderEvent (PAYMENT_SUCCEEDED / PAYMENT_FAILED)
       await tx.orderEvent.create({
