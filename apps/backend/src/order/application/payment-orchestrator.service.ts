@@ -161,7 +161,19 @@ export class PaymentOrchestratorService {
     // Step 5-7: Update database based on gateway response (new transaction)
     // ===============================
     await this.prisma.$transaction(async (tx) => {
-      // Re-derive current state to check for race conditions
+      // Re-verify payment status to prevent race conditions with concurrent requests
+      const currentPayment = await tx.payment.findUnique({
+        where: { id: payment.id },
+      });
+
+      if (!currentPayment || currentPayment.status !== PaymentStatus.INITIATED) {
+        // Payment was already processed by another concurrent request
+        throw new BadRequestException(
+          `Payment ${paymentId} was already processed concurrently with status: ${currentPayment?.status}`,
+        );
+      }
+
+      // Re-derive current state to check for order state changes
       const events = await tx.orderEvent.findMany({
         where: { orderId: payment.orderId },
         orderBy: { createdAt: 'asc' },
