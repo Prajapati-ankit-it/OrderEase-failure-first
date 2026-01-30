@@ -354,7 +354,7 @@ Idempotency is transactional. The key is stored in the **same transaction** as o
 
 **What Happens:**
 
-A payment is stuck in `INITIATED` state (gateway timeout, network failure, server crash). The `PaymentRecoveryWorker` runs every minute and finds stuck payments:
+A payment is stuck in `INITIATED` state (gateway timeout, network failure, server crash). The `PaymentRecoveryWorker` runs every 30 seconds and finds stuck payments:
 
 ```sql
 SELECT id, "orderId"
