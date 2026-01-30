@@ -1,8 +1,16 @@
 # OrderEase Monorepo - Architecture Guide
 
-## 📐 Clean Architecture Overview
+## 📐 Architecture Overview
 
-This monorepo implements a **scalable microservices architecture** with strict separation of concerns following Clean Architecture and Domain-Driven Design principles.
+OrderEase is a **Modular Monolith** built for high-concurrency order processing with event-sourced order tracking, integer-based financial precision, and idempotent APIs.
+
+### Key Architectural Decisions
+
+1. **Modular Monolith**: Single deployment with clear domain boundaries
+2. **Event Sourcing**: Order lifecycle tracked as append-only event log
+3. **Integer Currency**: All amounts in cents (avoids IEEE-754 precision issues)
+4. **Idempotency**: Hash-based duplicate detection for safe retries
+5. **Recovery Workers**: Background jobs reconcile stuck payments/refunds
 
 ## 🎯 Core Principles
 
@@ -197,6 +205,127 @@ pnpm --filter @orderease/backend add <package-name>
 ```bash
 pnpm --filter @orderease/shared-dtos add <package-name>
 ```
+
+## 🔄 Event Sourcing & Financial Integrity
+
+### Event-Sourced Order Lifecycle
+
+Orders use **event sourcing** — the `OrderEvent` table is the source of truth. Order state is derived by replaying events.
+
+**Event Types:**
+```typescript
+enum OrderEventType {
+  ORDER_REQUESTED      // User initiates checkout
+  ORDER_VALIDATED      // Cart validated, items snapshotted
+  PAYMENT_INITIATED    // Payment record created
+  PAYMENT_SUCCEEDED    // Gateway confirmed payment
+  PAYMENT_FAILED       // Gateway rejected payment
+  ORDER_CONFIRMED      // Order finalized
+  ORDER_CANCELLED      // User/admin cancelled
+  PAYMENT_REFUNDED     // Refund completed
+}
+```
+
+**State Derivation:**
+```typescript
+function deriveOrderState(events: OrderEvent[]): OrderState {
+  return events.reduce((state, event) => {
+    return applyTransition(state, event.type);
+  }, OrderState.PENDING);
+}
+```
+
+**Why Event Sourcing:**
+- **Audit Trail**: Full history of order progression
+- **Debugging**: Replay events to reproduce any state
+- **Recovery**: Workers query events to find stuck orders
+- **Immutability**: Past events never change
+
+### Integer-Based Currency (No Floats)
+
+All monetary values stored as **integers in cents**:
+
+```prisma
+model Food {
+  price Int  // 1000 = $10.00
+}
+
+model Payment {
+  amount Int // 2599 = $25.99
+}
+```
+
+**Why Integer over Float:**
+- **IEEE-754 Problem**: `0.1 + 0.2 !== 0.3` in floating-point
+- **Accumulation**: Rounding errors compound over many operations
+- **Auditability**: Exact penny-level precision for financial records
+
+**Example:**
+```typescript
+// Float (WRONG)
+let total = 0.0;
+total += 10.01; // $10.01
+total += 20.02; // $20.02
+// Result: $30.029999999999998 ❌
+
+// Int (CORRECT)
+let totalCents = 0;
+totalCents += 1001; // $10.01
+totalCents += 2002; // $20.02
+// Result: 3003 cents = $30.03 ✅
+```
+
+### Idempotency
+
+Client-provided idempotency keys prevent duplicate orders:
+
+```typescript
+POST /api/order/checkout
+{
+  "idempotencyKey": "checkout_user123_20240115_abc789"
+}
+```
+
+**Mechanism:**
+1. Client generates unique key (hash of cart + timestamp)
+2. Backend checks `IdempotencyKey` table
+3. If exists, return cached response
+4. If new, process and store result
+
+**Schema:**
+```prisma
+model IdempotencyKey {
+  key         String @id
+  requestHash String
+  response    Json
+  createdAt   DateTime
+}
+```
+
+### Recovery Workers
+
+**PaymentRecoveryWorker:**
+Finds payments stuck in `INITIATED` status and retries gateway processing.
+
+```typescript
+async run() {
+  const stuck = await prisma.payment.findMany({
+    where: {
+      status: PaymentStatus.INITIATED,
+      createdAt: { lt: oneMinuteAgo }
+    }
+  });
+  
+  for (const payment of stuck) {
+    await gateway.processPayment(payment.id);
+  }
+}
+```
+
+**RefundRecoveryWorker:**
+Finds cancelled orders without refunds and initiates them.
+
+**Key Insight:** Event log enables "eventual consistency" recovery without sagas.
 
 ## 📋 Architecture Rules
 

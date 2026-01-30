@@ -40,7 +40,7 @@ erDiagram
     OrderItem {
         String id PK
         String foodName "Snapshot"
-        Float price "Snapshot"
+        Int price "Snapshot (cents)"
         Int quantity
     }
 
@@ -54,13 +54,13 @@ erDiagram
     Payment {
         String id PK
         PaymentStatus status
-        Float amount
+        Int amount "Amount (cents)"
     }
 
     Food {
         String id PK
         String name
-        Float price
+        Int price "Price (cents)"
         Boolean isAvailable
     }
 
