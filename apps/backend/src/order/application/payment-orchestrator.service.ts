@@ -106,21 +106,20 @@ export class PaymentOrchestratorService {
   /**
    * Process a payment - orchestrates the entire payment workflow
    * This is the main business logic for payment processing:
-   * 1. Load payment via repository
-   * 2. Load order events
-   * 3. Derive current order state
-   * 4. Call FakePaymentGateway to simulate external payment
+   * 1. Load payment and order events (in transaction)
+   * 2. Derive current order state
+   * 3. Validate that processing can proceed
+   * 4. Call FakePaymentGateway to simulate external payment (OUTSIDE transaction)
    * 5. Validate state transition using domain state machine
-   * 6. Update payment status
-   * 7. Emit OrderEvent (PAYMENT_SUCCEEDED / PAYMENT_FAILED)
+   * 6. Update payment status and emit event (in new transaction)
    * 
-   * All operations run inside prisma.$transaction
+   * Note: Gateway call is intentionally OUTSIDE transaction to avoid long-held locks
    */
   async processPayment(paymentId: string): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      // ===============================
-      // Step 1: Load payment via repository
-      // ===============================
+    // ===============================
+    // Step 1-3: Load data and validate (inside transaction for consistency)
+    // ===============================
+    const { payment, currentState } = await this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.findUnique({
         where: { id: paymentId },
       });
@@ -129,39 +128,35 @@ export class PaymentOrchestratorService {
         throw new BadRequestException('Payment not found');
       }
 
-      // ===============================
-      // Step 2: Load order events
-      // ===============================
       const events = await tx.orderEvent.findMany({
         where: { orderId: payment.orderId },
         orderBy: { createdAt: 'asc' },
       });
 
-      // ===============================
-      // Step 3: Derive current order state
-      // ===============================
       const currentState: OrderState = deriveOrderState(events);
 
-      // ===============================
-      // Step 4: Call FakePaymentGateway to simulate external payment
-      // ===============================
-      const paymentResult = await this.fakePaymentGateway.charge(paymentId);
+      return { payment, currentState };
+    });
 
-      // ===============================
-      // Step 5: Determine next event type based on gateway response
-      // ===============================
+    // ===============================
+    // Step 4: Call FakePaymentGateway to simulate external payment
+    // This is OUTSIDE transaction to avoid holding DB locks during external call
+    // ===============================
+    const paymentResult = await this.fakePaymentGateway.charge(paymentId);
+
+    // ===============================
+    // Step 5-7: Update database based on gateway response (new transaction)
+    // ===============================
+    await this.prisma.$transaction(async (tx) => {
+      // Determine next event type based on gateway response
       const nextEventType = paymentResult === 'SUCCESS'
         ? OrderEventType.PAYMENT_SUCCEEDED
         : OrderEventType.PAYMENT_FAILED;
 
-      // ===============================
-      // Step 6: Validate state transition using domain state machine
-      // ===============================
+      // Validate state transition using domain state machine
       assertValidTransition(currentState, nextEventType);
 
-      // ===============================
-      // Step 7: Update payment status
-      // ===============================
+      // Update payment status
       const newStatus = paymentResult === 'SUCCESS'
         ? PaymentStatus.SUCCEEDED
         : PaymentStatus.FAILED;
@@ -171,9 +166,7 @@ export class PaymentOrchestratorService {
         data: { status: newStatus },
       });
 
-      // ===============================
-      // Step 8: Emit OrderEvent (PAYMENT_SUCCEEDED / PAYMENT_FAILED)
-      // ===============================
+      // Emit OrderEvent (PAYMENT_SUCCEEDED / PAYMENT_FAILED)
       await tx.orderEvent.create({
         data: {
           orderId: payment.orderId,

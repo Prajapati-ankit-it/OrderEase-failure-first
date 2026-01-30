@@ -15,6 +15,7 @@ type FakePaymentMode =
 export class FakePaymentGateway {
   private readonly mode: FakePaymentMode = 'ALWAYS_SUCCESS';
   private failureCount = new Map<string, number>();
+  private readonly MAX_CACHE_SIZE = 1000; // Prevent unbounded growth
 
   /**
    * Simulate charging a payment through external provider
@@ -37,6 +38,7 @@ export class FakePaymentGateway {
         const failures = this.failureCount.get(paymentId) || 0;
         if (failures === 0) {
           this.failureCount.set(paymentId, 1);
+          this.cleanupCache(); // Prevent memory leak
           return 'FAILED';
         }
         return 'SUCCESS';
@@ -51,5 +53,22 @@ export class FakePaymentGateway {
     // Simulate 10-50ms network delay
     const delay = Math.random() * 40 + 10;
     return new Promise((resolve) => setTimeout(resolve, delay));
+  }
+
+  /**
+   * Clean up old entries from cache to prevent unbounded growth
+   * Simple LRU-like cleanup: remove oldest entries when size exceeds threshold
+   */
+  private cleanupCache(): void {
+    if (this.failureCount.size > this.MAX_CACHE_SIZE) {
+      // Remove first 20% of entries (oldest based on insertion order)
+      const entriesToRemove = Math.floor(this.MAX_CACHE_SIZE * 0.2);
+      let removed = 0;
+      for (const key of this.failureCount.keys()) {
+        if (removed >= entriesToRemove) break;
+        this.failureCount.delete(key);
+        removed++;
+      }
+    }
   }
 }

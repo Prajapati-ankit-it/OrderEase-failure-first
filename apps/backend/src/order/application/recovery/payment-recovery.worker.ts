@@ -1,5 +1,4 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { PaymentStatus } from '@prisma/client';
 import { PaymentOrchestratorService } from '../payment-orchestrator.service';
 import type { IPaymentRepository } from '../../infra/payment.repository.interface';
 import { PAYMENT_REPOSITORY } from '../../infra/payment.repository.interface';
