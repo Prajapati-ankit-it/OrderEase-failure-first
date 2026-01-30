@@ -14,8 +14,6 @@ export class RefundRecoveryWorker {
     // Phase 1: CLAIM - Short transaction with row locking
     // ===============================
     const claimedOrders = await this.prisma.$transaction(async (tx) => {
-      // Find orders eligible for refund using PostgreSQL row locking
-      // We lock payment rows first, then extract unique order IDs
       const refundablePayments = await tx.$queryRaw<
         { orderId: string }[]
       >`
@@ -36,7 +34,6 @@ export class RefundRecoveryWorker {
         LIMIT 10
       `;
 
-      // Extract unique order IDs from locked payments
       const uniqueOrderIds = [...new Set(refundablePayments.map(p => p.orderId))];
       return uniqueOrderIds;
     });
@@ -54,7 +51,6 @@ export class RefundRecoveryWorker {
           `[RefundRecoveryWorker] Failed to process refund for order ${orderId}`,
           error,
         );
-        // Continue processing other orders even if one fails
       }
     }
   }

@@ -4,14 +4,13 @@ import { PaymentOrchestratorService } from '../payment-orchestrator.service';
 
 @Injectable()
 export class PaymentRecoveryWorker {
-  // Payments stuck for more than 1 minute are considered recoverable
   private readonly STUCK_THRESHOLD_MS = 1 * 60 * 1000;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly paymentOrchestrator: PaymentOrchestratorService,
   ) { }
-
+  
   async run(): Promise<void> {
     // ===============================
     // Phase 1: CLAIM - Short transaction with row locking
@@ -19,7 +18,6 @@ export class PaymentRecoveryWorker {
     const claimedPayments = await this.prisma.$transaction(async (tx) => {
       const cutoff = new Date(Date.now() - this.STUCK_THRESHOLD_MS);
 
-      // Lock stuck payment rows for processing
       const lockedPayments = await tx.$queryRaw<
         { id: string; orderId: string }[]
       >`
@@ -47,7 +45,6 @@ export class PaymentRecoveryWorker {
           `[PaymentRecoveryWorker] Failed to process payment ${payment.id}`,
           error,
         );
-        // Continue processing other payments even if one fails
       }
     }
   }
