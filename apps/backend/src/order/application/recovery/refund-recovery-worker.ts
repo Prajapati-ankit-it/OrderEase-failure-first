@@ -15,15 +15,18 @@ export class RefundRecoveryWorker {
     // ===============================
     const claimedOrders = await this.prisma.$transaction(async (tx) => {
       // Find orders eligible for refund using PostgreSQL row locking
+      // We lock payment rows first, then extract unique order IDs
       const refundablePayments = await tx.$queryRaw<
-        { id: string; orderId: string }[]
+        { orderId: string }[]
       >`
-        SELECT DISTINCT p."orderId"
+        SELECT p."orderId"
         FROM payments p
-        JOIN order_events oe
-          ON oe."orderId" = p."orderId"
-        WHERE oe.type = 'ORDER_CANCELLED'
-          AND p.status = 'SUCCEEDED'::"PaymentStatus"
+        WHERE p.status = 'SUCCEEDED'::"PaymentStatus"
+          AND EXISTS (
+            SELECT 1 FROM order_events oe
+            WHERE oe."orderId" = p."orderId"
+            AND oe.type = 'ORDER_CANCELLED'
+          )
           AND NOT EXISTS (
             SELECT 1 FROM payments p2
             WHERE p2."orderId" = p."orderId"
@@ -33,7 +36,9 @@ export class RefundRecoveryWorker {
         LIMIT 10
       `;
 
-      return refundablePayments.map(p => p.orderId);
+      // Extract unique order IDs from locked payments
+      const uniqueOrderIds = [...new Set(refundablePayments.map(p => p.orderId))];
+      return uniqueOrderIds;
     });
 
     // ===============================
