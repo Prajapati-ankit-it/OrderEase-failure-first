@@ -154,28 +154,6 @@ Worker calls `RefundOrchestrator.initiateRefund()`, which emits `PAYMENT_REFUNDE
 
 ---
 
-## 💡 Why This Project Matters (Interview Signal)
-
-This project demonstrates **production-grade distributed systems engineering**:
-
-| Pattern | Problem Solved | Complexity |
-|---------|----------------|------------|
-| **Event Sourcing** | How do you debug/audit state changes in distributed systems? | Medium |
-| **Idempotency Keys** | How do you handle client retries without side effects? | Medium |
-| **DB-level Locking** | How do you coordinate multiple replicas without distributed locks? | High |
-| **State Derivation** | How do you ensure state is always explainable? | Medium |
-| **Recovery Workers** | How do you handle stuck/orphaned transactions? | High |
-| **Integer Currency** | How do you avoid floating-point precision bugs in financial systems? | Low |
-
-**What this signals to interviewers:**
-- Deep understanding of **failure modes** in distributed systems
-- Experience with **event-driven architectures** and CQRS
-- Knowledge of **database isolation levels** and locking strategies
-- Ability to design **idempotent APIs** for high-reliability systems
-- Understanding of **eventual consistency** and compensating transactions
-
----
-
 ## 🚀 Running Locally
 
 ### Prerequisites
