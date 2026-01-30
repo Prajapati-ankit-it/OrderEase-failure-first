@@ -13,25 +13,42 @@ export class PaymentRecoveryWorker {
   ) { }
 
   async run(): Promise<void> {
-
-    await this.prisma.$transaction(async (tx) => {
+    // ===============================
+    // Phase 1: CLAIM - Short transaction with row locking
+    // ===============================
+    const claimedPayments = await this.prisma.$transaction(async (tx) => {
       const cutoff = new Date(Date.now() - this.STUCK_THRESHOLD_MS);
 
+      // Lock stuck payment rows for processing
       const lockedPayments = await tx.$queryRaw<
         { id: string; orderId: string }[]
       >`
-    SELECT id, "orderId"
-    FROM payments
-    WHERE status = 'INITIATED'::"PaymentStatus"
-      AND "createdAt" < ${cutoff}
-    FOR UPDATE SKIP LOCKED
-    LIMIT 10
-  `;
+        SELECT id, "orderId"
+        FROM payments
+        WHERE status = 'INITIATED'::"PaymentStatus"
+          AND "createdAt" < ${cutoff}
+        FOR UPDATE SKIP LOCKED
+        LIMIT 10
+      `;
 
-      for (const payment of lockedPayments) {
-        await this.paymentOrchestrator.processPayment(payment.id);
-      }
+      return lockedPayments;
     });
 
+    // ===============================
+    // Phase 2: PROCESS - Outside transaction
+    // Each payment processes in its own independent transaction
+    // ===============================
+    for (const payment of claimedPayments) {
+      try {
+        await this.paymentOrchestrator.processPayment(payment.id);
+        console.log(`[PaymentRecoveryWorker] Successfully processed payment ${payment.id}`);
+      } catch (error) {
+        console.error(
+          `[PaymentRecoveryWorker] Failed to process payment ${payment.id}`,
+          error,
+        );
+        // Continue processing other payments even if one fails
+      }
+    }
   }
 }
