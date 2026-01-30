@@ -38,6 +38,7 @@ enum OrderEventSource {
 
 enum PaymentStatus {
   INITIATED
+  PROCESSING
   SUCCEEDED
   FAILED
   REFUNDED

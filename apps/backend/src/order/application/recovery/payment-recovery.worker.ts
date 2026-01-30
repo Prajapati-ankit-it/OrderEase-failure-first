@@ -1,7 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '@orderease/shared-database';
 import { PaymentOrchestratorService } from '../payment-orchestrator.service';
-import type { IPaymentRepository } from '../../infra/payment.repository.interface';
-import { PAYMENT_REPOSITORY } from '../../infra/payment.repository.interface';
 
 @Injectable()
 export class PaymentRecoveryWorker {
@@ -9,28 +8,30 @@ export class PaymentRecoveryWorker {
   private readonly STUCK_THRESHOLD_MS = 1 * 60 * 1000;
 
   constructor(
-    @Inject(PAYMENT_REPOSITORY)
-    private readonly paymentRepository: IPaymentRepository,
+    private readonly prisma: PrismaService,
     private readonly paymentOrchestrator: PaymentOrchestratorService,
-  ) {}
+  ) { }
 
   async run(): Promise<void> {
-    const cutoff = new Date(Date.now() - this.STUCK_THRESHOLD_MS);
-    
-    const stuckPayments = await this.paymentRepository.findStuckPayments(cutoff);
 
-    for (const payment of stuckPayments) {
-      try {
+    await this.prisma.$transaction(async (tx) => {
+      const cutoff = new Date(Date.now() - this.STUCK_THRESHOLD_MS);
+
+      const lockedPayments = await tx.$queryRaw<
+        { id: string; orderId: string }[]
+      >`
+    SELECT id, "orderId"
+    FROM payments
+    WHERE status = 'INITIATED'::"PaymentStatus"
+      AND "createdAt" < ${cutoff}
+    FOR UPDATE SKIP LOCKED
+    LIMIT 10
+  `;
+
+      for (const payment of lockedPayments) {
         await this.paymentOrchestrator.processPayment(payment.id);
-        console.log(
-          `[RecoveryWorker] Successfully processed payment ${payment.id}`,
-        );
-      } catch (err) {
-        console.error(
-          `[RecoveryWorker] Failed to recover payment ${payment.id}`,
-          err,
-        );
       }
-    }
+    });
+
   }
 }
