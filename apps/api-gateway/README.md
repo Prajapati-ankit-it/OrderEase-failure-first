@@ -34,6 +34,10 @@ JWT_SECRET=your_jwt_secret_here
 JWT_EXPIRES_IN=7d
 JWT_REFRESH_SECRET=your_refresh_secret_here
 JWT_REFRESH_EXPIRES_IN=30d
+
+# Rate Limiting (IP-based)
+RATE_LIMIT_TTL=60000           # Time window in milliseconds (default: 60000ms = 60s)
+RATE_LIMIT_MAX=100             # Maximum requests per IP per time window (default: 100)
 ```
 
 ## Development
@@ -69,7 +73,73 @@ All routes except the following are protected by JWT authentication:
 ## Future Enhancements
 
 - [x] JWT verification middleware
-- [ ] Rate limiting
+- [x] IP-based rate limiting
 - [ ] Request/response logging
 - [ ] Circuit breaker pattern
 - [ ] Load balancing
+
+## Rate Limiting
+
+The API Gateway implements **IP-based rate limiting** to protect backend services from abuse and ensure fair usage.
+
+### How It Works
+
+- **Tracking**: Requests are tracked by client IP address
+- **IP Detection**: Supports both direct connections and proxied requests
+  - Checks `X-Forwarded-For` header (for load balancers/proxies)
+  - Falls back to `X-Real-IP` header
+  - Uses socket IP as final fallback
+- **Blocking**: Requests exceeding the limit receive a `429 Too Many Requests` response
+- **Headers**: Rate limit information is included in response headers:
+  - `X-RateLimit-Limit`: Maximum requests allowed per window
+  - `X-RateLimit-Remaining`: Requests remaining in current window
+  - `X-RateLimit-Reset`: Time when the rate limit resets (Unix timestamp)
+  - `Retry-After`: Seconds until the rate limit resets (on 429 responses)
+
+### Configuration
+
+Rate limiting is configured via environment variables:
+
+- `RATE_LIMIT_TTL`: Time window in milliseconds (default: 60000 = 60 seconds)
+- `RATE_LIMIT_MAX`: Maximum requests per IP per time window (default: 100)
+
+**Example configurations:**
+
+```bash
+# Strict limits: 50 requests per 30 seconds
+RATE_LIMIT_TTL=30000
+RATE_LIMIT_MAX=50
+
+# Relaxed limits: 200 requests per 2 minutes
+RATE_LIMIT_TTL=120000
+RATE_LIMIT_MAX=200
+
+# Default: 100 requests per 60 seconds
+# (no env vars needed)
+```
+
+### Response Example
+
+When rate limit is exceeded, clients receive:
+
+```json
+{
+  "statusCode": 429,
+  "message": "ThrottlerException: Too Many Requests"
+}
+```
+
+With headers:
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 0
+X-RateLimit-Reset: 1738448523
+Retry-After: 60
+```
+
+### Backend Independence
+
+- **Zero modifications** to backend services required
+- Rate limiting is applied at the gateway level
+- Backend services remain unaware of rate limiting logic
+- Can be easily enabled/disabled by deploying/removing the gateway

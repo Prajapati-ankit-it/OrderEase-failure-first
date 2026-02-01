@@ -2,11 +2,14 @@ import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/c
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
 import { JwtModule } from '@nestjs/jwt';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { jwtConfig } from '@orderease/shared-config';
 import { parseJwtExpiration } from '@orderease/shared-utils';
 import { ProxyController } from './proxy.controller';
 import { ProxyService } from './proxy.service';
 import { JwtAuthMiddleware } from './middleware';
+import { IpThrottlerGuard } from './guards';
 
 @Module({
   imports: [
@@ -31,9 +34,28 @@ import { JwtAuthMiddleware } from './middleware';
       },
       inject: [ConfigService],
     }),
+    // IP-based rate limiting
+    ThrottlerModule.forRootAsync({
+      useFactory: () => ({
+        throttlers: [
+          {
+            name: 'short',
+            // Allow N requests per time window (configurable via env vars)
+            ttl: parseInt(process.env.RATE_LIMIT_TTL || '60000', 10), // Default: 60 seconds
+            limit: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // Default: 100 requests
+          },
+        ],
+      }),
+    }),
   ],
   controllers: [ProxyController],
-  providers: [ProxyService],
+  providers: [
+    ProxyService,
+    {
+      provide: APP_GUARD,
+      useClass: IpThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
