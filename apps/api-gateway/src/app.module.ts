@@ -63,9 +63,9 @@ export class AppModule implements NestModule {
       .apply(JwtAuthMiddleware)
       // Apply to all routes except auth endpoints
       .exclude(
-        { path: 'auth*', method: RequestMethod.ALL },
-        { path: 'public*', method: RequestMethod.ALL },
-        { path: 'health*', method: RequestMethod.ALL },
+        { path: 'auth/(.*)', method: RequestMethod.ALL },
+        { path: 'public/(.*)', method: RequestMethod.ALL },
+        { path: 'health/(.*)', method: RequestMethod.ALL },
       )
       .forRoutes('*');
   }
