@@ -28,7 +28,12 @@ Minimal NestJS-based API Gateway for HTTP routing, IP-based rate limiting, and r
 PORT=4000
 BACKEND_URL=http://localhost:3001
 ORDER_SERVICE_URL=http://localhost:3002
-CORS_ORIGIN=*
+
+# CORS Configuration
+# For development: Allow specific origins (comma-separated)
+CORS_ORIGIN=http://localhost:3000,http://localhost:3001
+# For testing/unsafe: Allow all origins (not recommended with credentials)
+# CORS_ORIGIN=*
 
 # Rate Limiting (IP-based)
 RATE_LIMIT_TTL=60000           # Time window in milliseconds (default: 60000ms = 60s)
