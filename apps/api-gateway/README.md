@@ -72,7 +72,7 @@ The API Gateway implements **IP-based rate limiting** to protect backend service
 - **Headers**: Rate limit information is included in response headers:
   - `X-RateLimit-Limit-short`: Maximum requests allowed per window
   - `X-RateLimit-Remaining-short`: Requests remaining in current window
-  - `X-RateLimit-Reset-short`: Time when the rate limit resets (in seconds)
+  - `X-RateLimit-Reset-short`: Seconds until the rate limit resets
   - `Retry-After-short`: Seconds until the rate limit resets (on 429 responses)
 
 ### Configuration

@@ -135,7 +135,7 @@ function main() {
       process.exit(0);
     });
   } else {
-    console.error('\x1b[31mError: Unknown service "%s"\x1b[0m', serviceName);
+    console.error('\x1b[31mError: Unknown service "' + serviceName + '"\x1b[0m');
     console.log('');
     console.log('Usage: node server.js [service]');
     console.log('');

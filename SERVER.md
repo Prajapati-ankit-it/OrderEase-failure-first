@@ -135,7 +135,7 @@ kill <PID>
 
 2. Check that environment files exist:
    ```bash
-   ls apps/*/. env
+   ls apps/*/.env
    ```
 
 3. Build the services:
