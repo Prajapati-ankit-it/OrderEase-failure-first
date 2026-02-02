@@ -541,7 +541,7 @@ This installs required packages:
 Update your backend `.env` file to allow the HTTPS origin:
 
 ```env
-CORS_ORIGIN=http://localhost:3001,https://orderease.dev:3001
+CORS_ORIGIN = http://localhost:3000,http://localhost:3001,https://orderease.dev:3000,https://orderease.dev:3001
 ```
 
 The backend will now accept requests from both HTTP and HTTPS origins.
@@ -646,7 +646,7 @@ npm install
 **Solution:**
 Update `backend/.env`:
 ```env
-CORS_ORIGIN=http://localhost:3001,https://orderease.dev:3001
+CORS_ORIGIN = http://localhost:3000,http://localhost:3001,https://orderease.dev:3000,https://orderease.dev:3001
 ```
 
 #### "Host Not Found" / Cannot Reach orderease.dev

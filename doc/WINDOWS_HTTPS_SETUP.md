@@ -121,7 +121,7 @@ This installs the required proxy and HTTPS dependencies.
 Edit `backend\.env` file:
 
 ```env
-CORS_ORIGIN=http://localhost:3001,https://orderease.dev:3001
+CORS_ORIGIN = http://localhost:3000,http://localhost:3001,https://orderease.dev:3000,https://orderease.dev:3001
 ```
 
 ### 9. Start Backend
