@@ -29,7 +29,7 @@ npm install
 
 # 6. Configure backend CORS
 # Edit backend/.env and add:
-# CORS_ORIGIN=http://localhost:3001,https://orderease.dev:3001
+# CORS_ORIGIN = http://localhost:3000,http://localhost:3001,https://orderease.dev:3000,https://orderease.dev:3001
 
 # 7. Start backend
 cd ../backend
@@ -80,7 +80,7 @@ npm install
 
 # 7. Configure backend CORS
 # Edit backend\.env and add:
-# CORS_ORIGIN=http://localhost:3001,https://orderease.dev:3001
+# CORS_ORIGIN = http://localhost:3000,http://localhost:3001,https://orderease.dev:3000,https://orderease.dev:3001
 
 # 8. Start backend (in a new terminal)
 cd ..\backend
@@ -194,7 +194,7 @@ Edit `backend/.env`:
 
 ```env
 # Add HTTPS origin to CORS
-CORS_ORIGIN=http://localhost:3001,https://orderease.dev:3001
+CORS_ORIGIN = http://localhost:3000,http://localhost:3001,https://orderease.dev:3000,https://orderease.dev:3001
 ```
 
 ### Frontend Configuration

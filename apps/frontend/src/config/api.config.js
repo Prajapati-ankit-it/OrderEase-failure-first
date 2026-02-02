@@ -9,7 +9,7 @@ const getApiBaseUrl = () => {
   const envGatewayUrl = process.env.REACT_APP_API_GATEWAY_URL;
   
   // Priority: API_GATEWAY_URL > API_URL > default
-  return envGatewayUrl || envUrl || 'http://localhost:5000/api';
+  return envGatewayUrl || envUrl || 'http://localhost:4000/api';
 };
 
 const apiConfig = {
