@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IpThrottlerGuard } from './ip-throttler.guard';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 describe('IpThrottlerGuard', () => {
