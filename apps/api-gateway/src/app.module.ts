@@ -36,16 +36,17 @@ import { IpThrottlerGuard } from './guards';
     }),
     // IP-based rate limiting
     ThrottlerModule.forRootAsync({
-      useFactory: () => ({
+      useFactory: (configService: ConfigService) => ({
         throttlers: [
           {
             name: 'short',
             // Allow N requests per time window (configurable via env vars)
-            ttl: parseInt(process.env.RATE_LIMIT_TTL || '60000', 10), // Default: 60000 milliseconds (60 seconds)
-            limit: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // Default: 100 requests
+            ttl: parseInt(configService.get<string>('RATE_LIMIT_TTL') ?? '60000', 10), // Default: 60 seconds
+            limit: parseInt(configService.get<string>('RATE_LIMIT_MAX') ?? '100', 10), // Default: 100 requests
           },
         ],
       }),
+      inject: [ConfigService],
     }),
   ],
   controllers: [ProxyController],
