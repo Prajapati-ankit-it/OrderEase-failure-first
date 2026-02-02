@@ -71,7 +71,11 @@ RATE_LIMIT_MAX=999999
 
 **If dependencies are missing:**
 ```bash
-cd /home/runner/work/OrderEase-failure-first-/OrderEase-failure-first-
+# From repository root
+pnpm install
+
+# Or from api-gateway directory
+cd apps/api-gateway
 pnpm install
 ```
 
@@ -96,7 +100,7 @@ PORT=4001
 - Error: "PROXY_ERROR" or connection refused
 
 **Cause:**
-- Backend service not running
+- Backend service not running (port 3001)
 - Wrong BACKEND_URL configured
 
 **Solution:**
@@ -109,8 +113,14 @@ PORT=4001
 
 2. Verify BACKEND_URL in `apps/api-gateway/.env`:
    ```bash
+   # Main backend service
    BACKEND_URL=http://localhost:3001
+   
+   # Order service (if separate)
+   ORDER_SERVICE_URL=http://localhost:3002
    ```
+
+**Note:** The main backend typically runs on port 3001. The order service (if separated) runs on port 3002.
 
 ---
 
