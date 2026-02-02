@@ -131,10 +131,10 @@ When rate limit is exceeded, clients receive:
 
 With headers:
 ```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 0
-X-RateLimit-Reset: 1738448523
-Retry-After: 60
+X-RateLimit-Limit-short: 100
+X-RateLimit-Remaining-short: 0
+X-RateLimit-Reset-short: 1738448523
+Retry-After-short: 60
 ```
 
 ### Backend Independence
