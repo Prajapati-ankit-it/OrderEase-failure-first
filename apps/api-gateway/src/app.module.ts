@@ -41,7 +41,7 @@ import { IpThrottlerGuard } from './guards';
           {
             name: 'short',
             // Allow N requests per time window (configurable via env vars)
-            ttl: parseInt(process.env.RATE_LIMIT_TTL || '60000', 10), // Default: 60 seconds
+            ttl: parseInt(process.env.RATE_LIMIT_TTL || '60000', 10), // Default: 60000 milliseconds (60 seconds)
             limit: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // Default: 100 requests
           },
         ],
