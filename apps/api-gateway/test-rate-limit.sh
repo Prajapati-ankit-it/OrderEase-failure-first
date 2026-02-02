@@ -27,13 +27,15 @@ echo ""
 for i in $(seq 1 $REQUESTS); do
     echo "Request #$i:"
     
-    # Make request and capture response
-    response=$(curl -s -w "\n%{http_code}" "$GATEWAY_URL$TEST_ENDPOINT")
-    http_code=$(echo "$response" | tail -n1)
-    body=$(echo "$response" | head -n-1)
+    # Make request and capture response (headers + body + status code)
+    response=$(curl -s -i -w "\n%{http_code}" "$GATEWAY_URL$TEST_ENDPOINT")
+    http_code=$(printf '%s\n' "$response" | tail -n1)
+    response_without_status=$(printf '%s\n' "$response" | sed '$d')
+    response_clean=$(printf '%s\n' "$response_without_status" | tr -d '\r')
+    headers=$(printf '%s\n' "$response_clean" | sed '/^$/q')
+    body=$(printf '%s\n' "$response_clean" | sed '1,/^$/d')
     
-    # Get rate limit headers
-    headers=$(curl -s -I "$GATEWAY_URL$TEST_ENDPOINT" 2>/dev/null)
+    # Get rate limit headers from the response
     rate_limit=$(echo "$headers" | grep -i "X-RateLimit-Limit" | head -1 | cut -d: -f2 | tr -d ' \r')
     remaining=$(echo "$headers" | grep -i "X-RateLimit-Remaining" | head -1 | cut -d: -f2 | tr -d ' \r')
     reset=$(echo "$headers" | grep -i "X-RateLimit-Reset" | head -1 | cut -d: -f2 | tr -d ' \r')
