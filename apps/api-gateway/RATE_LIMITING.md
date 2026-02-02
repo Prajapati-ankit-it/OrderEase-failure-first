@@ -308,11 +308,14 @@ curl -H "X-Forwarded-For: 192.168.1.100" http://localhost:4000/api/public/health
 
 ### IP Spoofing Protection
 
-The gateway trusts proxy headers (X-Forwarded-For). Ensure:
-1. Gateway is behind a trusted proxy/load balancer
-2. Proxy strips client-supplied X-Forwarded-For headers
-3. Proxy adds its own X-Forwarded-For with real client IP
+The gateway does **not** blindly trust client-supplied IP headers. It derives the client IP from the HTTP request (for example, `req.ip`) together with a configured set of **trusted proxies** and may only use `X-Forwarded-For` values that originate from those trusted proxies.
 
+When deploying behind a proxy/load balancer, ensure:
+1. The gateway is configured with the correct trusted proxy/load balancer addresses
+2. The proxy strips any client-supplied `X-Forwarded-For` / `X-Real-IP` headers
+3. The proxy adds its own `X-Forwarded-For` header containing the real client IP
+
+If the gateway is ever exposed directly to the internet (no proxy in front), configure it **not** to trust proxy headers for rate limiting so that IP-based limits cannot be bypassed by spoofing `X-Forwarded-For`.
 ### DDoS Protection
 
 Rate limiting provides basic DDoS protection but should be combined with:
