@@ -4,23 +4,21 @@ import {
   type IOrderRepository,
   ORDER_REPOSITORY,
 } from './infra/order.repository.interface';
-import { PaymentOrchestratorService } from './application/payment-orchestrator.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     @Inject(ORDER_REPOSITORY)
     private orderRepository: IOrderRepository,
-    private readonly paymentOrchestrator: PaymentOrchestratorService,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   /**
    * Checkout - Convert user's cart into an order
    * This is an idempotent, event-driven, snapshot-based checkout function
+   * Payment is handled separately by Payment module
    */
   async checkout(userId: string, idempotencyKey: string): Promise<string> {
-
     const existing = await this.prisma.idempotencyKey.findUnique({
       where: { key: idempotencyKey },
     });
@@ -28,15 +26,13 @@ export class OrderService {
     if (existing) {
       return (existing.response as { orderId: string }).orderId;
     }
-    // PHASE 1: Create order + events (transaction inside repo)
+
+    // Create order + events (transaction inside repo)
     const orderId = await this.orderRepository.checkout(
       userId,
       idempotencyKey,
     );
 
-    // PHASE 2: Trigger next step AFTER COMMIT
-    const paymentId = await this.paymentOrchestrator.initiatePayment(orderId);
-    await this.paymentOrchestrator.processPayment(paymentId);
     return orderId;
   }
 

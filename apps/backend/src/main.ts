@@ -9,7 +9,6 @@ import {
   LoggingInterceptor,
 } from './gateway';
 import { validateEnv } from '@orderease/shared-config';
-import { PaymentRecoveryWorker } from './order/application/recovery/payment-recovery.worker';
 import { RefundRecoveryWorker } from './order/application/recovery/refund-recovery-worker';
 
 /**
@@ -166,14 +165,12 @@ async function bootstrap() {
   const port = configService.get<number>('app.port') || 3000;
   await app.listen(port);
 
-// --- INITIALIZE PAYMENT RECOVERY WORKER ---
-  const recoveryWorker = app.get(PaymentRecoveryWorker);
+// --- INITIALIZE RECOVERY WORKER ---
   const refundRecoveryWorker = app.get(RefundRecoveryWorker);
-  // Schedule the worker to run every 30 seconds
+  // Schedule worker to run every 30 seconds
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   setInterval(async () => {
     try {
-      await recoveryWorker.run();
       await refundRecoveryWorker.run();
     } catch (err) {
       logger.error(`Critical failure in RecoveryWorker: ${err.message}`);
