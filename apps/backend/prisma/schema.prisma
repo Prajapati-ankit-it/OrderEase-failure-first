@@ -145,13 +145,15 @@ model OrderEvent {
 // =====================================
 
 model Payment {
-  id        String        @id @default(cuid())
-  orderId  String
-  provider String
-  amount   Int          // Amount in cents (e.g., $10.00 = 1000)
-  status   PaymentStatus
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id                String        @id @default(cuid())
+  orderId           String
+  provider          String
+  providerOrderId   String?       // Razorpay order ID
+  providerPaymentId String?       // Razorpay payment ID
+  amount            Int           // Amount in cents (e.g., $10.00 = 1000)
+  status            PaymentStatus
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   order  Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
   events OrderEvent[]
