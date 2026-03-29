@@ -6,6 +6,7 @@
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService implements OnModuleInit {
@@ -22,9 +23,6 @@ export class RedisService implements OnModuleInit {
   private async initializeRedis() {
     try {
       this.logger.log('Initializing Redis connection...');
-      
-      // Check if ioredis is available
-      const Redis = require('ioredis');
       
       const redisConfig = {
         host: this.configService.get<string>('REDIS_HOST') || 'localhost',
@@ -179,6 +177,64 @@ export class RedisService implements OnModuleInit {
     const available = this.redis !== null && this.isInitialized;
     this.logger.debug(`Redis availability check: ${available}`);
     return available;
+  }
+
+  /**
+   * Add member to Redis set
+   * @param key - Redis set key
+   * @param member - Member to add
+   * @returns True if successful
+   */
+  async sadd(key: string, member: string): Promise<boolean> {
+    if (!this.redis || !this.isInitialized) {
+      return false;
+    }
+
+    try {
+      const result = await this.redis.sadd(key, member);
+      return result > 0;
+    } catch (error) {
+      this.logger.error(`Failed to add to Redis set: ${key}`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Get all members of Redis set
+   * @param key - Redis set key
+   * @returns Array of members
+   */
+  async smembers(key: string): Promise<string[]> {
+    if (!this.redis || !this.isInitialized) {
+      return [];
+    }
+
+    try {
+      return await this.redis.smembers(key);
+    } catch (error) {
+      this.logger.error(`Failed to get Redis set members: ${key}`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Remove member from Redis set
+   * @param key - Redis set key
+   * @param member - Member to remove
+   * @returns True if successful
+   */
+  async srem(key: string, member: string): Promise<boolean> {
+    if (!this.redis || !this.isInitialized) {
+      return false;
+    }
+
+    try {
+      const result = await this.redis.srem(key, member);
+      return result > 0;
+    } catch (error) {
+      this.logger.error(`Failed to remove from Redis set: ${key}`, error);
+      return false;
+    }
   }
 
   /**

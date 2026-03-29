@@ -1,0 +1,5 @@
+- Always break problem into steps
+- Always read relevant files before coding
+- Never assume missing info
+- Validate before writing code
+- Prefer using tools over guessing

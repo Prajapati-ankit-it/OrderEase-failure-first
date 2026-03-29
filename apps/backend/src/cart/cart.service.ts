@@ -208,14 +208,20 @@ export class CartService {
 
           // Set in Redis with TTL
           await this.redisService.set(redisKey, redisCart);
-          this.logger.debug(`Updated Redis cart for user ${userId} - added item ${foodId}`);
         } catch (error) {
           this.logger.warn(`Failed to update Redis cart for user ${userId}`, error);
         }
       }
 
-      // Step 2: Update DB (existing logic for compatibility)
-      await this.cartRepository.addOrUpdateItem(userId, foodId, quantity);
+      // Step 2: Mark cart as dirty for async sync (REMOVED direct DB write)
+      if (this.redisService.isAvailable()) {
+        try {
+          await this.redisService.set(`cart:dirty:${userId}`, true, 7 * 24 * 60 * 60); // 7 days TTL
+          await this.redisService.sadd('cart:dirty_users', userId);
+        } catch (error) {
+          this.logger.warn(`Failed to mark cart as dirty for user ${userId}`, error);
+        }
+      }
 
       return this.getCart(userId);
     } catch (error) {
@@ -285,8 +291,15 @@ export class CartService {
         }
       }
 
-      // Step 2: Update DB (existing logic for compatibility)
-      await this.cartRepository.updateItemQuantity(userId, itemId, quantity);
+      // Step 2: Mark cart as dirty for async sync (REMOVED direct DB write)
+      if (this.redisService.isAvailable()) {
+        try {
+          await this.redisService.set(`cart:dirty:${userId}`, true, 7 * 24 * 60 * 60); // 7 days TTL
+          await this.redisService.sadd('cart:dirty_users', userId);
+        } catch (error) {
+          this.logger.warn(`Failed to mark cart as dirty for user ${userId}`, error);
+        }
+      }
 
       return this.getCart(userId);
     } catch (error) {
@@ -346,8 +359,15 @@ export class CartService {
         }
       }
 
-      // Step 2: Update DB (existing logic for compatibility)
-      await this.cartRepository.removeItem(userId, itemId);
+      // Step 2: Mark cart as dirty for async sync (REMOVED direct DB write)
+      if (this.redisService.isAvailable()) {
+        try {
+          await this.redisService.set(`cart:dirty:${userId}`, true, 7 * 24 * 60 * 60); // 7 days TTL
+          await this.redisService.sadd('cart:dirty_users', userId);
+        } catch (error) {
+          this.logger.warn(`Failed to mark cart as dirty for user ${userId}`, error);
+        }
+      }
 
       return this.getCart(userId);
     } catch (error) {
@@ -374,15 +394,26 @@ export class CartService {
     // Step 1: Clear Redis first
     if (this.redisService.isAvailable()) {
       try {
-        await this.redisService.del(redisKey);
-        this.logger.debug(`Cleared Redis cart for user ${userId}`);
+        let emptyRedisCart = clearRedisCart();
+        
+        // Preserve cartId for consistency
+        emptyRedisCart.cartId = cart.id || 'cleared-cart';
+        
+        await this.redisService.set(redisKey, emptyRedisCart);
       } catch (error) {
         this.logger.warn(`Failed to clear Redis cart for user ${userId}`, error);
       }
     }
 
-    // Step 2: Clear DB (existing logic for compatibility)
-    await this.cartRepository.clearCart(userId);
+    // Step 2: Mark cart as dirty for async sync (REMOVED direct DB write)
+    if (this.redisService.isAvailable()) {
+      try {
+        await this.redisService.set(`cart:dirty:${userId}`, true, 7 * 24 * 60 * 60); // 7 days TTL
+        await this.redisService.sadd('cart:dirty_users', userId);
+      } catch (error) {
+        this.logger.warn(`Failed to mark cart as dirty for user ${userId}`, error);
+      }
+    }
 
     return this.getCart(userId);
   }
